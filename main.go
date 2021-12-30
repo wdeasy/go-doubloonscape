@@ -73,7 +73,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fmt.Println(err)
 			return
 		} else {
-			fmt.Printf("%s is the captain now.\n", m.Member.User.Username)
+			fmt.Printf("%s is the captain now.\n", m.Author.Username)
 		}
 		
 		members, err := s.GuildMembers(m.GuildID, "", 1000)
