@@ -5,7 +5,7 @@ import (
     "os"
     "os/signal"
     "syscall"
-	"regexp"
+    "regexp"
 
     "github.com/bwmarrin/discordgo"
 )
@@ -63,7 +63,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         return
     }	
 
-	matched, _ := regexp.MatchString(`\b[Ii]'?[Mm][ \t]+[Tt][Hh][Ee][ \t]+[Cc][Aa][Pp][Tt][Aa][Ii][Nn][ \t]+[Nn][Oo][Ww].?\b`, m.Content)
+	matched, _ := regexp.MatchString(`\b[Ii][’']?[Mm][ \t]+[Tt][Hh][Ee][ \t]+[Cc][Aa][Pp][Tt][Aa][Ii][Nn][ \t]+[Nn][Oo][Ww].?\b`, m.Content)
 	if matched {
 		err := s.GuildMemberRoleAdd(m.GuildID, m.Author.ID, Role)
 
