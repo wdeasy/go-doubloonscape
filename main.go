@@ -71,7 +71,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fmt.Println(err)
 			return
 		} else {
-			fmt.Printf("%s is the captain now.\n", m.Member.Nick)
+			fmt.Printf("%s is the captain now.\n", m.Author.Username)
 		}
 		
 		members, err := s.GuildMembers(m.GuildID, "", 1000)
@@ -85,7 +85,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		for _, member := range members {
 			for _, role := range member.Roles {
 				if (role == Role && member.User.ID != m.Author.ID) {
-					fmt.Printf("Removing the Captain role from %s.\n", member.Nick)
+					fmt.Printf("Removing the Captain role from %s.\n", member.User.Username)
 
 					err := s.GuildMemberRoleRemove(m.GuildID, member.User.ID, Role)
 
