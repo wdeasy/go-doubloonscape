@@ -8,3 +8,5 @@ services:
       - BOT_TOKEN=
       - ROLE=
       - CHANNEL=
+    volumes:
+      - .:/api      
