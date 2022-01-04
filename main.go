@@ -63,26 +63,13 @@ func main() {
         return
     }
 
-	ticker := time.NewTicker(60 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-		   select {
-			case <- ticker.C:
-				fmt.Println("Tick!")
-				env.incrementCaptain()
-				env.setTopic()
-			case <- quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
+	// Timer
+	env.GameTimer()
 
     // Wait here until CTRL-C or other term signal is received.
     fmt.Println("Bot is now running. Press CTRL-C to exit.")
     sc := make(chan os.Signal, 1)
-    signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+    signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
     <-sc
 
     // Cleanly close down the Discord session.
@@ -118,8 +105,6 @@ func (env *Env) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		if err != nil {
 			fmt.Println(err)
 			return
-		} else {
-			fmt.Printf("Checking %d Guild Members for Captain Role.\n", len(members))
 		}	
 
 		for _, member := range members {
@@ -157,7 +142,6 @@ func (env *Env) changeCaptains(ID string, Name string) {
 	env.getCaptain(ID, Name)
 	env.removeCaptains()
 	env.addCaptain(ID)
-	env.setTopic()
 }
 
 func (env *Env) getCaptain(ID string, Name string){
@@ -207,22 +191,43 @@ func (env *Env) setTopic() {
 			fmt.Println(err)
 			return
 		}	
-	
+
 		topic := fmt.Sprintf("Captain: %s. Gold: %d.", captain.Name, captain.Gold)
 		
-		var channelEditStruct discordgo.ChannelEdit
-		channelEditStruct.Topic = topic
+		_, err = env.dg.ChannelEditComplex(Channel, &discordgo.ChannelEdit{
+			Topic: topic,
+		})		
 
-		var channelEditPointer *discordgo.ChannelEdit = &channelEditStruct
-
-		_, e := env.dg.ChannelEditComplex(Channel, channelEditPointer)
-
-		if e != nil {
-			fmt.Println(e)
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
 		
 		fmt.Println("Set Topic.")
 	}
+}
+
+func (env *Env) GameTimer() {
+	i := 1
+	ticker := time.NewTicker(60 * time.Second)
+	quit := make(chan struct{})
+	go func() {
+		for {
+		   select {
+			case <- ticker.C:
+				//1 minute timer
+				env.incrementCaptain()
+				i++
+				
+				//5 minute timer
+				if (i % 5 == 0) {
+					env.setTopic()
+				}
+			case <- quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 }
 
