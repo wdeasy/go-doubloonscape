@@ -9,15 +9,15 @@ CMD ["air"]
 
 FROM base as built
 
-WORKDIR /go/app/app/doubloonscape
+WORKDIR /go/app/doubloonscape
 COPY . .
 
 ENV CGO_ENABLED=0
 
 RUN go get -d -v ./...
-RUN go build -o /tmp/app/doubloonscape ./*.go
+RUN go build -o /tmp/doubloonscape ./*.go
 
 FROM busybox
 
-COPY --from=built /tmp/app/doubloonscape /usr/bin/app/doubloonscape
-CMD ["app/doubloonscape"]
+COPY --from=built /tmp/doubloonscape /usr/bin/doubloonscape
+CMD ["doubloonscape"]
