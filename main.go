@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"syscall"
 	"time"
 
@@ -35,7 +36,7 @@ func main() {
 	 	return
 	}
 
-    if err = db.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		fmt.Println("could not ping DB: %w", err)
 	 	return
     }
@@ -74,6 +75,7 @@ func main() {
 
     // Cleanly close down the Discord session.
     dg.Close()
+	db.Close()
 }
 
 // This function will be called (due to AddHandler above) every time a new
@@ -161,6 +163,25 @@ func (env *Env) getCaptain(ID string, Name string){
 	}
 }	
 
+func (env *Env) getCaptains() ([]Captain){
+	rows, err := env.db.Query(`SELECT * FROM captains ORDER BY gold DESC`)
+	CheckError(err)
+
+	var captains []Captain
+	for rows.Next(){
+		var captain Captain 
+		err := rows.Scan(&captain.ID, &captain.Name, &captain.Gold, &captain.Captain)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		
+		captains = append(captains, captain)
+	}
+
+	return captains
+}	
+
 func (env *Env) removeCaptains(){
 	updateStmt := `UPDATE captains SET captain = $1`
 	_, e := env.db.Exec(updateStmt, false)
@@ -208,16 +229,18 @@ func (env *Env) setTopic() {
 }
 
 func (env *Env) GameTimer() {
-	i := 1
+	i := 0
 	ticker := time.NewTicker(60 * time.Second)
 	quit := make(chan struct{})
 	go func() {
 		for {
-		   select {
+		    select {
 			case <- ticker.C:
+				i++
+
 				//1 minute timer
 				env.incrementCaptain()
-				i++
+				env.setLeaderBoard()				
 				
 				//5 minute timer
 				if (i % 5 == 0) {
@@ -231,3 +254,63 @@ func (env *Env) GameTimer() {
 	}()
 }
 
+func (env *Env) setLeaderBoard() { 
+	captains := env.printCaptains()
+
+	if (captains == "") {
+		return
+	}
+
+	messages, err := env.dg.ChannelMessages(Channel, 100, "", "", "")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}	
+
+	if (messages[0].Author.ID == env.dg.State.User.ID) {
+		env.editLeaderBoard(captains, messages[0].ID)
+	} else {
+		env.newLeaderBoard(captains)
+		
+		for _, s := range messages {
+			if (s.Author.ID == env.dg.State.User.ID) {
+				env.dg.ChannelMessageDelete(Channel, s.ID)
+			}
+		}
+	}
+}
+
+func (env *Env) printCaptains() (string) {
+	captains := env.getCaptains()
+
+	var b strings.Builder
+	for _, s := range captains {
+		fmt.Fprintf(&b, "%d %s\n", s.Gold, s.Name)
+	}		
+
+	return b.String()
+}
+
+func (env *Env) editLeaderBoard(captains string, messageID string) { 
+	_, err := env.dg.ChannelMessageEditEmbed(Channel, messageID, &discordgo.MessageEmbed{
+		Color: 0xf1c40f,
+		Title: "𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡",
+		Description: captains,
+	})	
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (env *Env) newLeaderBoard(captains string) { 
+	_, err := env.dg.ChannelMessageSendEmbed(Channel, &discordgo.MessageEmbed{
+		Color: 0xf1c40f,
+		Title: "𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡",
+		Description: captains,
+	})	
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}
