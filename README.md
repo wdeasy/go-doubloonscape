@@ -9,4 +9,4 @@
 **CHANNEL**: The Channel ID for the Game  
 
 ```docker compose --profile tools run migrate```  
-```docker-compose up -d```  
+```docker-compose up```  
