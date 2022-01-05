@@ -4,7 +4,6 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-      target: dev
     volumes:
       - .:/opt/app/doubloonscape      
     environment:

@@ -21,5 +21,6 @@
 go.work
 
 docker-compose.yml
+docker-compose.yml.main
 tmp/*
 tmp/
