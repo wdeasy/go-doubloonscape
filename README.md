@@ -8,4 +8,5 @@
 **ROLE**: The Role ID for the Captain  
 **CHANNEL**: The Channel ID for the Game  
 
-```docker-compose up --build -d```
+```docker compose --profile tools run migrate```  
+```docker-compose up --build```  

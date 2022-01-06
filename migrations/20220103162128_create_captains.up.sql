@@ -1,0 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+CREATE TABLE captains(
+  id BIGINT UNIQUE NOT NULL,
+  name character varying NOT NULL,
+  gold INTEGER DEFAULT 0 NOT NULL,
+  captain BOOLEAN DEFAULT FALSE NOT NULL
+)
