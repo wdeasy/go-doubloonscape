@@ -465,10 +465,10 @@ func (env *Env) addReactions(message *discordgo.Message) {
     env.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🔱"))
     env.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🏴‍☠️"))
 
-    //if rand.Intn(100) == 2 {
+    if rand.Intn(100) == 2 {
         treasure = true
         env.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("👑"))
-    //}
+    }
 }
 
 func getName(nick string, user string) (string) {
