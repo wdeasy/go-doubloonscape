@@ -1,14 +1,14 @@
 package game
 
 import (
-	"math"
+    "math"
 
-	"github.com/wdeasy/go-doubloonscape/storage"
+    "github.com/wdeasy/go-doubloonscape/storage"
 )
 
 //main function for handling all the steps of changing out the current captain
 func (game *Game) newCaptain(GuildID string, UserID string) {
-	game.changeRoles(GuildID, UserID)
+    game.changeRoles(GuildID, UserID)
     game.changeCaptains(UserID)
     game.setMessage()   
 }
@@ -17,23 +17,23 @@ func (game *Game) newCaptain(GuildID string, UserID string) {
 func (game *Game) changeCaptains(ID string) {
     game.removeCaptains()
     game.addCaptain(ID)
-	game.currentCaptainID = ID
+    game.currentCaptainID = ID
 }
 
 //set captain status to false for all captains
 func (game *Game) removeCaptains(){
     for _, c := range game.captains {
-		captain := c
-		captain.Captain = false
-		game.captains[captain.ID] = captain
+        captain := c
+        captain.Captain = false
+        game.captains[captain.ID] = captain
     }	
 }
 
 //set captain status to true
 func (game *Game) addCaptain(ID string) {
     captain := game.captains[ID]
-	captain.Captain = true
-	game.captains[ID] = captain	
+    captain.Captain = true
+    game.captains[ID] = captain	
 }
 
 //increment captains gold
@@ -43,19 +43,19 @@ func (game *Game) incrementCaptain() {
     }
 
     captain := game.captains[game.currentCaptainID]
-	captain.Gold = captain.Gold + int(math.Floor(float64(captain.Prestige)))
-	game.captains[game.currentCaptainID] = captain	
+    captain.Gold = captain.Gold + int(math.Floor(float64(captain.Prestige)))
+    game.captains[game.currentCaptainID] = captain	
 }
 
 //create a captain and add it to the map
 func (game *Game) createCaptain(ID string, Name string) {
-	var captain storage.Captain
+    var captain storage.Captain
 
-	captain.ID = ID 
-	captain.Name = Name
-	captain.Gold = DEFAULT_GOLD
-	captain.Prestige = DEFAULT_PRESTIGE
-	captain.Captain = false
+    captain.ID = ID 
+    captain.Name = Name
+    captain.Gold = DEFAULT_GOLD
+    captain.Prestige = DEFAULT_PRESTIGE
+    captain.Captain = false
 
-	game.captains[ID] = captain
+    game.captains[ID] = captain
 }

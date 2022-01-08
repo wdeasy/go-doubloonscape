@@ -1,10 +1,10 @@
 package game
 
 import (
-	"fmt"
-	"regexp"
+    "fmt"
+    "regexp"
 
-	"github.com/bwmarrin/discordgo"
+    "github.com/bwmarrin/discordgo"
 )
 
 //handler for new messages in discord
@@ -13,11 +13,11 @@ func (game *Game) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
         return
     }
 
-	matched, _ := regexp.MatchString(CAPTAIN_REGEX, m.Content)
+    matched, _ := regexp.MatchString(CAPTAIN_REGEX, m.Content)
     if matched {
-		if _, ok := game.captains[m.Author.ID]; !ok {
-			game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
-		}
+        if _, ok := game.captains[m.Author.ID]; !ok {
+            game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
+        }
 
         game.newCaptain(m.GuildID, m.Author.ID)
     }
@@ -28,7 +28,7 @@ func (game *Game) setMessage(){
     messages, err := game.dg.ChannelMessages(Channel, 100, "", "", "")
     if err != nil {
         fmt.Printf("could not set message. error while getting messages from channel %s: %s\n", Channel, err)
-		return
+        return
     }
     
     embed := game.generateEmbed()
@@ -42,9 +42,9 @@ func (game *Game) setMessage(){
     for _, s := range messages {
         if (s.Author.ID == game.dg.State.User.ID) {
             err = game.dg.ChannelMessageDelete(Channel, s.ID)
-			if err != nil {
-				fmt.Printf("error while setting message. could not delete message %s: %s\n", s.ID, err)
-			}			
+            if err != nil {
+                fmt.Printf("error while setting message. could not delete message %s: %s\n", s.ID, err)
+            }			
         }
     }
 }
@@ -94,7 +94,7 @@ func (game *Game) newMessage(embed *discordgo.MessageEmbed) {
 
     msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
     if err != nil {
-		fmt.Printf("could not create new message: %s\n", err)
+        fmt.Printf("could not create new message: %s\n", err)
         return
     }
 
@@ -103,8 +103,8 @@ func (game *Game) newMessage(embed *discordgo.MessageEmbed) {
 
 //create a new captain with info from the discord message
 func (game *Game) addCaptainFromDiscordMessage(UserID string, Nick string, UserName string) {
-	name := getName(Nick, UserName)
-	game.createCaptain(UserID, name)	
+    name := getName(Nick, UserName)
+    game.createCaptain(UserID, name)	
 }
 
 //return the correct discord name
@@ -113,5 +113,5 @@ func getName(nick string, user string) (string) {
         return nick
     } 
 
-	return user
+    return user
 }

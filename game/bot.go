@@ -1,10 +1,10 @@
 package game
 
 import (
-	"fmt"
-	"os"
+    "fmt"
+    "os"
 
-	"github.com/bwmarrin/discordgo"
+    "github.com/bwmarrin/discordgo"
 )
 
 var (
