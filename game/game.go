@@ -59,13 +59,13 @@ func InitGame(storage *storage.Storage) (*Game, error) {
 
 //save all info to storage
 func (game *Game) SaveGame() {
-    start := time.Now()
+    // start := time.Now()
 
 	game.storage.SaveCaptains(game.captains)
 
-    end := time.Now()
-    diff := end.Sub(start)
-    fmt.Printf("Save Game took %f seconds.\n", diff.Seconds())
+    // end := time.Now()
+    // diff := end.Sub(start)
+    // fmt.Printf("Save Game took %f seconds.\n", diff.Seconds())
 }
 
 //main game loop
@@ -88,8 +88,8 @@ func (game *Game) GameTimer() {
                 }
 
                 game.setMessage()	                  
-
                 game.SaveGame()
+
                 i++
             case <- quit:
                 ticker.Stop()
