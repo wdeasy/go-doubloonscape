@@ -1,0 +1,4 @@
+ALTER TABLE captains ALTER COLUMN gold TYPE INTEGER;
+
+ALTER TABLE captains
+DROP COLUMN prestige;
