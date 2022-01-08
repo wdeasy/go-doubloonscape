@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
+    "fmt"
+    "os"
+    "os/signal"
+    "syscall"
 
     "github.com/wdeasy/go-doubloonscape/storage"
     "github.com/wdeasy/go-doubloonscape/game"

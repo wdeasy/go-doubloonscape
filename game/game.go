@@ -1,13 +1,13 @@
 package game
 
 import (
-	"fmt"
-	"sort"
-	"strings"
-	"time"
+    "fmt"
+    "sort"
+    "strings"
+    "time"
 
-	"github.com/bwmarrin/discordgo"
-	"github.com/wdeasy/go-doubloonscape/storage"
+    "github.com/bwmarrin/discordgo"
+    "github.com/wdeasy/go-doubloonscape/storage"
 )
 
 var (
@@ -19,8 +19,8 @@ type Game struct {
     storage *storage.Storage
     dg *discordgo.Session
 
-	captains map[string]storage.Captain
-	currentCaptainID string
+    captains map[string]storage.Captain
+    currentCaptainID string
 }
 
 type Stats struct {
@@ -30,38 +30,38 @@ type Stats struct {
 
 //start the game
 func InitGame(storage *storage.Storage) (*Game, error) {
-	var game Game
+    var game Game
     
     dg, err := game.InitBot()
     if err != nil {
         return nil, fmt.Errorf("could not initialize bot: %w", err)
     }
 
-	game.dg = dg
-	game.storage = storage
+    game.dg = dg
+    game.storage = storage
 
-	game.captains, err = storage.LoadCaptains()
+    game.captains, err = storage.LoadCaptains()
     if err != nil {
         return nil, fmt.Errorf("could not load captains: %w", err)
     }
 
-	currentCaptain, err := storage.LoadCurrentCaptain()
+    currentCaptain, err := storage.LoadCurrentCaptain()
     if err != nil {
         fmt.Printf("could not load current captain: %s\n", err)
     }
-	game.currentCaptainID = currentCaptain.ID
+    game.currentCaptainID = currentCaptain.ID
 
     // Timer
     game.GameTimer()
 
-	return &game, nil	
+    return &game, nil	
 }
 
 //save all info to storage
 func (game *Game) SaveGame() {
     // start := time.Now()
 
-	game.storage.SaveCaptains(game.captains)
+    game.storage.SaveCaptains(game.captains)
 
     // end := time.Now()
     // diff := end.Sub(start)
@@ -116,20 +116,20 @@ func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
 //format leaderboard to string
 func (game *Game) printLeaderboard(captains map[string]storage.Captain) (string) {
 
-	pl := make(PairList, len(game.captains))
-	i := 0
-	for k, v := range game.captains {
+    pl := make(PairList, len(game.captains))
+    i := 0
+    for k, v := range game.captains {
         pl[i] = Pair{k, v.Gold}
-		i++
-	}
+        i++
+    }
 
-	sort.Sort(sort.Reverse(pl))
+    sort.Sort(sort.Reverse(pl))
 
-	var b strings.Builder
-	for j, k := range pl {
-		fmt.Fprintf(&b, "` %2d ` ` %-27s ` ` %7d `\n", j+1, firstN(captains[k.Key].Name,27), k.Value)
-	}
-	return b.String()
+    var b strings.Builder
+    for j, k := range pl {
+        fmt.Fprintf(&b, "` %2d ` ` %-27s ` ` %7d `\n", j+1, firstN(captains[k.Key].Name,27), k.Value)
+    }
+    return b.String()
 }
 
 //update the stats struct
