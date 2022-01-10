@@ -8,7 +8,7 @@ import (
 //convert gold to prestige
 func (game *Game) addPrestige(UserID string) {
     captain := game.captains[UserID]
-    captain.Prestige = captain.Prestige + (float32(captain.Gold) * PRESTIGE_CONVERSION)
+    captain.Prestige = captain.Prestige + (float64(captain.Gold) * PRESTIGE_CONVERSION)
     captain.Gold = 0
     game.captains[UserID] = captain
 }

@@ -40,24 +40,17 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
 
 //add reactions to a message
 func (game *Game) addReactions(message *discordgo.Message) {
-    err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🪙"))
-    if err != nil {
-        fmt.Printf("could not add 🪙 reaction to new message %s: %s\n", message.ID, err)
-    }	
-
-    err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🔱"))
-    if err != nil {
-        fmt.Printf("could not add 🔱 reaction to new message %s: %s\n", message.ID, err)
-    }	
-
-    err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🏴‍☠️"))
-    if err != nil {
-        fmt.Printf("could not add 🏴‍☠️ reaction to new message %s: %s\n", message.ID, err)
-    }	
+    reactions := []string{"🪙", "🔱", "🏴‍☠️"}
+    for _, e := range reactions {
+        err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape(e))
+        if err != nil {
+            fmt.Printf("could not add %s reaction to new message %s: %s\n", e, message.ID, err)
+        }	
+    } 
 
     if rand.Intn(100) == 2 {
         treasure = true
-        err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("👑"))
+        err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("👑"))
         if err != nil {
             fmt.Printf("could not add 👑 reaction to new message %s: %s\n", message.ID, err)
         }			

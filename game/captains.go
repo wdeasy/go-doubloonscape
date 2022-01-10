@@ -1,6 +1,7 @@
 package game
 
 import (
+    "fmt"
     "math"
 
     "github.com/wdeasy/go-doubloonscape/storage"
@@ -8,7 +9,11 @@ import (
 
 //main function for handling all the steps of changing out the current captain
 func (game *Game) newCaptain(GuildID string, UserID string) {
-    game.changeRoles(GuildID, UserID)
+    err := game.changeRoles(GuildID, UserID)
+    if err != nil {
+        fmt.Printf("could not change roles: %s\n", err)
+    }	
+
     game.changeCaptains(UserID)
     game.setMessage()   
 }
@@ -36,14 +41,15 @@ func (game *Game) addCaptain(ID string) {
     game.captains[ID] = captain	
 }
 
-//increment captains gold
+//increment captains gold by prestige
 func (game *Game) incrementCaptain() {
     if game.currentCaptainID == "" {
         return
     }
 
     captain := game.captains[game.currentCaptainID]
-    captain.Gold = captain.Gold + int(math.Floor(float64(captain.Prestige)))
+    captain.Gold = captain.Gold + int(game.goldModifier() * math.Floor(captain.Prestige))
+    
     game.captains[game.currentCaptainID] = captain	
 }
 

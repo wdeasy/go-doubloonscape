@@ -19,10 +19,6 @@ func (game *Game) InitBot() (*discordgo.Session, error) {
         return nil, fmt.Errorf("BOT_TOKEN environment variable is not set")
     }
 
-    if Role == "" {
-        return nil, fmt.Errorf("ROLE environment variable is not set")
-    }
-
     if Channel == "" {
         return nil, fmt.Errorf("CHANNEL environment variable is not set")
     }   
@@ -55,6 +51,10 @@ func (game *Game) CloseBot() {
 
 //give the captain role to discord user and remove for all others
 func (game *Game) changeRoles(GuildID string, UserID string) (error){
+    if Role == "" {
+        return fmt.Errorf("ROLE environment variable is not set")
+    }
+
     err := game.dg.GuildMemberRoleAdd(GuildID, UserID, Role)
 
     if err != nil {

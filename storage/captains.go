@@ -10,7 +10,7 @@ type Captain struct {
     Name string
     Gold int
     Captain bool
-    Prestige float32
+    Prestige float64
 }
 
 //update captain or insert if it doesnt exist
