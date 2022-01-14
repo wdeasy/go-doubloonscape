@@ -66,9 +66,19 @@ func (game *Game) addCurrentEvent(name string) {
 
 //remove event from current events
 func (game *Game) removeCurrentEvent(name string) {
-    for i, e := range game.currentEvents {
+    var tempCurrentEvents []string
+
+    for _, e := range game.currentEvents {
         if name == e {
-            game.currentEvents = append(game.currentEvents[:i], game.currentEvents[i+1:]...)
+            continue
         }
+
+        tempCurrentEvents = append(tempCurrentEvents, e)
     }
+
+    if len(game.currentEvents) == len(tempCurrentEvents) {
+        return
+    }
+    
+    game.currentEvents = tempCurrentEvents
 }

@@ -51,16 +51,22 @@ func (game *Game) addReactions(message *discordgo.Message) {
 
 //see if event reactions can be added
 func (game *Game) checkEventReactions(message *discordgo.Message) { 
-    if treasureChance() {
+    if treasureChance() && !game.isReactionInReactions(TREASURE_REACTION, message.Reactions) {
         game.treasure.Up = true
         game.addReaction(message.ID, TREASURE_REACTION)		
     }
 
     for _, e := range game.events {
+        eventReaction := game.getReaction(e.Name)
+
+        if game.isReactionInReactions(eventReaction, message.Reactions) {
+            continue
+        }
+
         if e.Ready(game.getCooldown(e.Name)) {
             e.Up = true
             game.addCurrentEvent(e.Name)
-            game.addReaction(message.ID, game.getReaction(e.Name))
+            game.addReaction(message.ID, eventReaction)
         }        
     }
 
@@ -70,6 +76,16 @@ func (game *Game) checkEventReactions(message *discordgo.Message) {
             game.removeCurrentEvent(e)
         }
     }
+}
+
+func (game *Game) isReactionInReactions(reaction string, reactions []*discordgo.MessageReactions) (bool){
+    for _, r := range reactions {
+        if r.Emoji.Name == reaction {
+            return true
+        }
+    }
+    
+    return false
 }
 
 //add reaction to message
