@@ -2,7 +2,6 @@ package game
 
 import (
     "fmt"
-    "math/rand"
     "net/url"
 
     "github.com/bwmarrin/discordgo"
@@ -16,112 +15,119 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
 
     err := game.checkIfCaptainExists(m.UserID, m.GuildID)
     if err != nil {
-        fmt.Printf("error while checking if captain %s exists: %s\n", m.UserID, err)
+        printLog(fmt.Sprintf("error while checking if captain %s exists: %s\n", m.UserID, err))
         return
     }   
     
     switch m.Emoji.Name {
-        case "🪙":
-            game.coinEmoji()
-        case "🏴‍☠️":
-            game.pirateEmoji(m.UserID, m.GuildID)
-        case "🔱":
-            game.tridentEmoji(m.UserID)
-        case "👑":
-            game.crownEmoji(m.UserID)
-    }	
+        case INCREMENT_REACTION:
+            game.ReactionIncrement()
+        case CAPTAIN_REACTION:
+            game.ReactionCaptain(m.UserID, m.GuildID)
+        case PRESTIGE_REACTION:
+            game.ReactionPrestige(m.UserID)
+        case TREASURE_REACTION:           
+            game.ReactionTreasure(m.UserID)
+        case PICKPOCKET_REACTION:             
+            game.ReactionPickPocket(m.UserID)
+    }
     
-    err = game.dg.MessageReactionRemove(Channel, m.MessageID, url.QueryEscape(m.Emoji.Name), m.UserID)
-    if err != nil {
-        fmt.Printf("could not remove reaction %s from %s: %s\n", m.Emoji.Name, game.captains[m.UserID].Name, err)
-    }    
-
+    if m.Emoji.Name == TREASURE_REACTION || m.Emoji.Name == PICKPOCKET_REACTION {
+        game.removeReaction(m.MessageID, m.Emoji.Name, game.dg.State.User.ID)  
+    }
+    
+    game.removeReaction(m.MessageID, m.Emoji.Name, m.UserID)
 }
 
 //add reactions to a message
 func (game *Game) addReactions(message *discordgo.Message) {
-    reactions := []string{"🪙", "🔱", "🏴‍☠️"}
+    reactions := []string{INCREMENT_REACTION, PRESTIGE_REACTION, CAPTAIN_REACTION}
     for _, e := range reactions {
-        err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape(e))
-        if err != nil {
-            fmt.Printf("could not add %s reaction to new message %s: %s\n", e, message.ID, err)
-        }	
+        game.addReaction(message.ID, e)
     } 
 
-    if rand.Intn(100) == 2 {
-        treasure = true
-        err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("👑"))
-        if err != nil {
-            fmt.Printf("could not add 👑 reaction to new message %s: %s\n", message.ID, err)
-        }			
-    }
+    game.checkEventReactions(message)
 }
 
-//function for when the coin(🪙) reaction is used
-func (game *Game) coinEmoji() {
-    game.incrementCaptain()
-}
-
-//function for when the pirate(🏴‍☠️) reaction is used
-func (game *Game) pirateEmoji(UserID string, GuildID string) {
-    if UserID == game.currentCaptainID {
-        return
+//see if event reactions can be added
+func (game *Game) checkEventReactions(message *discordgo.Message) { 
+    if treasureChance() {
+        game.treasure.Up = true
+        game.addReaction(message.ID, TREASURE_REACTION)		
     }
 
-    game.newCaptain(GuildID, UserID)
-}
-
-//function for when the trident(🔱) reaction is used
-func (game *Game) tridentEmoji(UserID string) {
-    if UserID != game.currentCaptainID {
-        return
-    }
-
-    game.addPrestige(UserID)
-    game.setMessage()		
-}
-
-//function for when the crown(👑) reaction is used
-func (game *Game) crownEmoji(UserID string) {
-    if !treasure {
-        fmt.Printf("%s clicked on 👑 but the treasure is not up yet\n", UserID)
-        return 
-    } 
-
-    treasure = false
-
-    game.giveTreasure(UserID)
-    game.setMessage()
-
-    messages, err := game.dg.ChannelMessages(Channel, 100, "", "", "")
-    if err != nil {
-        fmt.Printf("could not retrieve messages for channel %s: %s\n", Channel, err)
-        return
-    }
-
-    for _, s := range messages {
-        if s.Author.ID == game.dg.State.User.ID {
-            err := game.dg.MessageReactionRemove(Channel, s.ID, url.QueryEscape("👑"), game.dg.State.User.ID)
-
-            if err != nil {
-                fmt.Printf("could not remove 👑 reaction from bot message %s: %s\n", s.ID, err)
-                return
-            }
+    for _, e := range game.events {
+        if e.Ready(game.getCooldown(e.Name)) {
+            e.Up = true
+            game.addReaction(message.ID, game.getReaction(e.Name))
         }
     }
 }
 
-//create a captain in the map if it does not exist
-func (game *Game) checkIfCaptainExists(UserID string, GuildID string) (error) {
-    if _, ok := game.captains[UserID]; !ok {
-        err := game.addCaptainFromDiscordReaction(GuildID, UserID)
+//add reaction to message
+func (game *Game) addReaction(messageID string, reaction string) {
+    err := game.dg.MessageReactionAdd(Channel, messageID, url.QueryEscape(reaction))
+    if err != nil {
+        printLog(fmt.Sprintf("could not add %s reaction to new message %s: %s\n", reaction, messageID, err))
+    }	    
+}
 
-        if err != nil {
-            return fmt.Errorf("could not add captain %s from discord reaction: %w", UserID, err)
-        }		
+//remove reaction to message
+func (game *Game) removeReaction(messageID string, reaction string, userID string) {
+    err := game.dg.MessageReactionRemove(Channel, messageID, url.QueryEscape(reaction), userID)
+    if err != nil {
+        printLog(fmt.Sprintf("could not remove %s reaction from bot message %s: %s\n", reaction, messageID, err))
+        return
+    }	    
+}
+
+//function for when the increment reaction is used
+func (game *Game) ReactionIncrement() {
+    game.incrementCaptain()
+}
+
+//function for when the captain reaction is used
+func (game *Game) ReactionCaptain(UserID string, GuildID string) {
+    if UserID == game.currentCaptainID {
+        return
     }
-    
-    return nil
+
+    game.changeCaptainsInGameAndServer(GuildID, UserID)
+}
+
+//function for when the prestige reaction is used
+func (game *Game) ReactionPrestige(UserID string) {
+    if UserID != game.currentCaptainID {
+        return
+    }
+
+    game.captains[UserID].AddPrestige(PRESTIGE_CONVERSION)
+    game.setMessage()		
+}
+
+//function for when the treasure reaction is used
+func (game *Game) ReactionTreasure(UserID string) {
+    if !game.treasure.Up {
+        return 
+    } 
+
+    game.treasure.Up = false
+    game.giveTreasure(UserID)
+}
+
+//function for when the pickpocket reaction is used
+func (game *Game) ReactionPickPocket(UserID string) {
+    if !game.events[PICKPOCKET_NAME].Up {
+        return
+    }
+
+    game.resetPickPocket()
+
+    if UserID == game.currentCaptainID {
+        return
+    }
+   
+    game.executePickPocket(UserID) 
 }
 
 //create a new captain with info from the discord reaction
@@ -140,4 +146,14 @@ func (game *Game) addCaptainFromDiscordReaction(GuildID string, UserID string) (
     game.createCaptain(UserID, name)	
 
     return nil
+}
+
+//get the appropriate reaction from constants
+func (game *Game) getReaction(name string) (string) {
+    switch name {
+    case PICKPOCKET_NAME:
+        return PICKPOCKET_REACTION
+    default:
+        return DEFAULT_REACTION
+    }
 }

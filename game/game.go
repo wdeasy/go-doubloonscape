@@ -8,24 +8,26 @@ import (
     "github.com/wdeasy/go-doubloonscape/storage"
 )
 
-var (
-    stats Stats
-    treasure bool
-)
-
 type Game struct {
     storage *storage.Storage
     dg *discordgo.Session
 
-    captains map[string]storage.Captain
+    captains map[string]*storage.Captain
     currentCaptainID string
+    currentMessageID string
 
-    destinations map[string]storage.Destination
+    destinations map[string]*storage.Destination
+    treasure *storage.Treasure
+    events map[string]*storage.Event
+    logs []*storage.Log
+
+    stats Stats
 }
 
 type Stats struct {
-    Leaderboard string
-    Event string
+    Leaderboard *string
+    Destinations *string
+    Log *string
 }
 
 //start the game
@@ -66,9 +68,24 @@ func (game *Game) LoadGame() (error){
 
     currentCaptain, err := game.storage.LoadCurrentCaptain()
     if err != nil {
-        fmt.Printf("could not load current captain: %s\n", err)
+        printLog(fmt.Sprintf("could not load current captain: %s\n", err))
     }
     game.currentCaptainID = currentCaptain.ID
+
+    game.treasure, err = game.storage.LoadTreasure()
+    if err != nil {
+        return fmt.Errorf("could not load treasure: %w", err)
+    }    
+
+    game.events, err = game.storage.LoadEvents()
+    if err != nil {
+        return fmt.Errorf("could not load events: %w", err)
+    }
+
+    game.logs, err = game.storage.LoadLogs(MAX_LOG_LENGTH)
+    if err != nil {
+        return fmt.Errorf("could not load logs: %w", err)
+    }    
 
     return nil
 }
@@ -79,10 +96,13 @@ func (game *Game) SaveGame() {
 
     game.storage.SaveCaptains(game.captains)
     game.storage.SaveDestinations(game.destinations)
+    game.treasure.Save()
+    game.storage.SaveEvents(game.events)
+    game.storage.SaveLogs(game.logs)
 
     // end := time.Now()
     // diff := end.Sub(start)
-    // fmt.Printf("Save Game took %f seconds.\n", diff.Seconds())
+    // printLog(fmt.Sprintf("Save Game took %f seconds.\n", diff.Seconds()))
 }
 
 //main game loop
@@ -101,15 +121,21 @@ func (game *Game) GameTimer() {
                 if (i % game.timeModifier() == 0) {
                     game.visitDestinations()
                     game.incrementCaptain()
+                    game.checkTreasure()
+                    game.checkEvents()
                     game.setMessage()	                  
                     game.SaveGame()                    
                 }
                 
-                if (time.Now().Hour() != last.Hour()) {
-                    game.setStats()
-                    last = time.Now()
+                if (time.Now().Day() != last.Day()) {
+                    game.logTreasure()
                 }
 
+                if (time.Now().Hour() != last.Hour()) {
+                    game.setLeaderboard()
+                    last = time.Now()
+                }
+                
                 i++
             case <- quit:
                 ticker.Stop()
@@ -121,26 +147,25 @@ func (game *Game) GameTimer() {
 
 //time modifier
 func (game *Game) timeModifier() (int) {
-    if game.destinations["bermuda"].Amount == 0 {
+    if game.destinations[BERMUDA_NAME].Amount == 0 {
         return 60
     }
         
-    return int(60 * (1 + (0.01 * float64(game.destinations["bermuda"].Amount))))
+    return int(60 * (1 + (0.01 * float64(game.destinations[BERMUDA_NAME].Amount))))
 }
 
 //gold modifier
 func (game *Game) goldModifier() (float64) {
-    if game.destinations["atlantis"].Amount == 0 {
+    if game.destinations[ATLANTIS_NAME].Amount == 0 {
         return 1
     }
 
-    return float64(game.destinations["atlantis"].Amount)
+    return float64(game.destinations[ATLANTIS_NAME].Amount)
 }
 
 //update the stats struct
-func (game *Game) setStats() (){
-    stats.Leaderboard = game.printLeaderboard()
-
-    stats.Event = ""
+func (game *Game) setStats() {
+    game.setLeaderboard()
+    game.setDestinations()    
+    game.setLogs()
 }
-

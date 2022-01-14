@@ -1,7 +1,9 @@
 package game
 
 import (
+    "fmt"
     "math/rand"
+    "strings"
     "time"
 
     "github.com/wdeasy/go-doubloonscape/storage"
@@ -15,52 +17,95 @@ func (game *Game) visitDestinations() {
 
 //gold modifier
 func (game *Game) visitAtlantis() {
-    game.visitDestination("atlantis", ATLANTIS_CHANCE, ATLANTIS_DURATION, 1, ATLANTIS_MOD_MAX)	
+    game.visitDestination(ATLANTIS_NAME, ATLANTIS_CHANCE, ATLANTIS_DURATION, 2, ATLANTIS_MOD_MAX)	
 }
 
 //time modifier
 func (game *Game) visitBermuda() {
-    game.visitDestination("bermuda", BERMUDA_CHANCE, BERMUDA_DURATION, (BERMUDA_MOD_MAX * -1), BERMUDA_MOD_MAX)
+    game.visitDestination(BERMUDA_NAME, BERMUDA_CHANCE, BERMUDA_DURATION, (BERMUDA_MOD_MAX * -1), BERMUDA_MOD_MAX)
 }
 
 //time modifier
 func (game *Game) visitDestination(name string, chance int, duration int, lower int, upper int) {
+
     if _, ok := game.destinations[name]; !ok {
-        game.setDestination(name, time.Now(), 0)	
+        game.setDestination(name, time.Now(), 0)
+        return	
     }
 
     if time.Now().Before(game.destinations[name].End) {
         return
     }
 
-    if time.Now().After(game.destinations[name].End) && game.destinations[name].Amount != 0 {
-        game.setDestination(name, time.Now(), 0)
-        return
+    if game.destinations[name].Amount != 0 {
+        game.destinations[name].Amount = 0
+        game.setDestinations()
     }	
 
     if rand.Intn(100) <= chance {
         end := time.Now().Add(time.Minute * time.Duration(duration))
         amount := RandInt(lower, upper)
 
-        game.setDestination(name, end, amount)
+        game.updateDestination(name, end, amount)
+        game.setDestinations()
     }
 }
 
-//update the destination info
+//add the destination info
 func (game *Game) setDestination(name string, end time.Time, amount int) {
     var destination storage.Destination
 
+    destination.DB = game.storage.DB
     destination.Name = name
-    destination.End = time.Now()
-    destination.Amount = 0
+    destination.End = end
+    destination.Amount = amount
 
-    game.destinations[destination.Name] = destination	
+    game.destinations[destination.Name] = &destination	
+}
+
+//update the destination info
+func (game *Game) updateDestination(name string, end time.Time, amount int) {
+    game.destinations[name].End = end
+    game.destinations[name].Amount = amount
 }
 
 //generate random int
 func RandInt(lower, upper int) int {
     rand.Seed(time.Now().UnixNano())
     rng := upper - lower
+
     return rand.Intn(rng) + lower
 }
 
+//generate random int64
+func RandInt64(lower, upper int64) int64 {
+    rand.Seed(time.Now().UnixNano())
+    rng := upper - lower
+
+    return rand.Int63n(rng) + lower
+}
+
+func (game *Game) setDestinations() {
+    game.stats.Destinations = game.destinationsString()
+}
+
+//generate destinations string for embed
+func (game *Game) destinationsString() (*string) {
+    var b strings.Builder
+
+    if time.Now().Before(game.destinations[ATLANTIS_NAME].End) {
+        fmt.Fprintf(&b, "%s%s%d%s\n", "` 𝔄𝔱𝔩𝔞𝔫𝔱𝔦𝔰  ` ", "` 𝔇𝔬𝔲𝔟𝔩𝔬𝔬𝔫𝔰 𝔪𝔲𝔩𝔱𝔦𝔭𝔩𝔦𝔢𝔡 𝔟𝔶 ", game.destinations["atlantis"].Amount, " `")
+    }
+
+    if time.Now().Before(game.destinations[BERMUDA_NAME].End) {
+        fmt.Fprintf(&b, "%s%s%d%s\n", "` 𝔅𝔢𝔯𝔪𝔲𝔡𝔞 ` ", "` 𝔗𝔦𝔪𝔢 𝔞𝔩𝔱𝔢𝔯𝔢𝔡 𝔟𝔶 ", game.destinations["bermuda"].Amount, " 𝔭𝔢𝔯𝔠𝔢𝔫𝔱 `")
+    }	
+
+    if b.Len() == 0 {
+        fmt.Fprintf(&b, "%s\n", "` 𝔗𝔥𝔢 𝔖𝔢𝔳𝔢𝔫 𝔖𝔢𝔞𝔰 ` ")        
+    }
+
+    String := "**𝔇𝔢𝔰𝔱𝔦𝔫𝔞𝔱𝔦𝔬𝔫𝔰**\n" + b.String()
+    
+    return &String
+}

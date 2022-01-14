@@ -45,7 +45,7 @@ func (game *Game) InitBot() (*discordgo.Session, error) {
 func (game *Game) CloseBot() {
     err := game.dg.Close()
     if err != nil {
-        fmt.Printf("error while closing discord bot: %s", err)
+        printLog(fmt.Sprintf("error while closing discord bot: %s\n", err))
     }
 }
 
@@ -59,9 +59,7 @@ func (game *Game) changeRoles(GuildID string, UserID string) (error){
 
     if err != nil {
         return fmt.Errorf("could not add captain role to user %s: %w", UserID, err)
-    }
-
-    fmt.Printf("%s is the captain now.\n", game.captains[UserID].Name)		
+    }	
 
     members, err := game.dg.GuildMembers(GuildID, "", 1000)
     if err != nil {
