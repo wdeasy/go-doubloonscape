@@ -31,7 +31,7 @@ func (game *Game) checkEvent(name string, cooldown int, chance int) (bool){
     return true
 }
 
-//update the destination info
+//update the event info
 func (game *Game) setEvent(name string) {
     var event storage.Event
 

@@ -27,7 +27,8 @@ func (game *Game) checkPickPocket() {
 
 //execute the pickpocket
 func (game *Game) executePickPocket(pickpocketeer string) {
-    amount := RandInt64(1, game.captains[game.currentCaptainID].Gold)
+    max := float64(game.captains[game.currentCaptainID].Gold) * (float64(PICKPOCKET_MAX) * .01)
+    amount := RandInt64(1, int64(max))
 
     if amount == 0 {
         return
