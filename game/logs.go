@@ -46,6 +46,7 @@ func (game *Game) logsString() (*string) {
     return &String	
 }
 
+//print log information to the console
 func printLog(log string) {
     fmt.Printf("[%s] %s\n", time.Now().Format("01/02/06 15:04:05"), log)
 }

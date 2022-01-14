@@ -85,6 +85,7 @@ func RandInt64(lower, upper int64) int64 {
     return rand.Int63n(rng) + lower
 }
 
+//update the embed destination info
 func (game *Game) setDestinations() {
     game.stats.Destinations = game.destinationsString()
 }

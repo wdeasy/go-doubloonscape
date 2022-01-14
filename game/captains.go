@@ -15,7 +15,7 @@ func (game *Game) changeCaptainsInGameAndServer(GuildID string, UserID string) {
     }	
 
     game.changeCaptainsInGame(UserID)
-    game.addToLogs(game.captainString())
+    printLog(game.captainString())
     game.setMessage()   
 }
 

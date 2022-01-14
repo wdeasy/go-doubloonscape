@@ -42,6 +42,7 @@ func (game *Game) printLeaderboard() (*string) {
     return &String
 }
 
+//update the embed leaderboard info
 func (game *Game) setLeaderboard() {
     game.stats.Leaderboard = game.printLeaderboard()
 }

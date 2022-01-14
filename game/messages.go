@@ -41,15 +41,21 @@ func (game *Game) setMessage(){
         game.deleteMessage(game.currentMessageID)
     }
 
+    tempMessageId := game.currentMessageID
     game.currentMessageID = game.newMessage(&embed)
 
     for _, s := range messages {
+        if (s.ID == tempMessageId) {
+            continue
+        }
+
         if (s.Author.ID == game.dg.State.User.ID) {
             game.deleteMessage(s.ID)		
         }
     }
 }
 
+//delete a discord message
 func (game *Game) deleteMessage(messageID string) {
     err := game.dg.ChannelMessageDelete(Channel, messageID)
     if err != nil {
@@ -57,6 +63,7 @@ func (game *Game) deleteMessage(messageID string) {
     }	    
 }
 
+//get previous discord messages
 func (game *Game) getMessages() ([]*discordgo.Message){
     messages, err := game.dg.ChannelMessages(Channel, MESSAGE_MAX, "", "", "")
     if err != nil {
