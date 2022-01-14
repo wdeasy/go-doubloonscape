@@ -78,6 +78,7 @@ func (game *Game) checkEventReactions(message *discordgo.Message) {
     }
 }
 
+//check if reaction is already in message
 func (game *Game) isReactionInReactions(reaction string, reactions []*discordgo.MessageReactions) (bool){
     for _, r := range reactions {
         if r.Emoji.Name == reaction {
