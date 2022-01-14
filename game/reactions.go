@@ -121,7 +121,7 @@ func (game *Game) ReactionPickPocket(UserID string) {
         return
     }
 
-    game.resetPickPocket()
+    game.resetEvent(PICKPOCKET_NAME)
 
     if UserID == game.currentCaptainID {
         return

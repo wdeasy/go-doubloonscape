@@ -19,7 +19,7 @@ func (game *Game) checkEvent(name string, cooldown int, chance int) (bool){
         return false	
     }
 
-    if game.events[name].Ready(game.getCooldown(name)) {
+    if !game.events[name].Ready(game.getCooldown(name)) {
         return false
     }
 
@@ -27,7 +27,7 @@ func (game *Game) checkEvent(name string, cooldown int, chance int) (bool){
         return false
     }
 
-    game.setEvent(name)
+    game.resetEvent(name)
     return true
 }
 
@@ -53,4 +53,8 @@ func (game *Game) getCooldown(name string) (int) {
     }   
 }
 
-
+//reset the event
+func (game *Game) resetEvent(name string) {
+    game.events[name].Last = time.Now()
+    game.events[name].Up = false
+}

@@ -2,7 +2,6 @@ package game
 
 import (
     "fmt"
-    "time"
 )
 
 //check if pickpocket is available
@@ -40,12 +39,6 @@ func (game *Game) executePickPocket(pickpocketeer string) {
     game.addToLogs(game.pickPocketString(pickpocketeer, amount))
     game.setMessage()	
 }
-
-func (game *Game) resetPickPocket() {
-    game.events[PICKPOCKET_NAME].Last = time.Now()
-    game.events[PICKPOCKET_NAME].Up = false
-}
-
 
 //create a pickpocketstring for the logs
 func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) {
