@@ -58,3 +58,17 @@ func (game *Game) resetEvent(name string) {
     game.events[name].Last = time.Now()
     game.events[name].Up = false
 }
+
+//add event to current events
+func (game *Game) addCurrentEvent(name string) {
+    game.currentEvents = append(game.currentEvents, name)
+}
+
+//remove event from current events
+func (game *Game) removeCurrentEvent(name string) {
+    for i, e := range game.currentEvents {
+        if name == e {
+            game.currentEvents = append(game.currentEvents[:i], game.currentEvents[i+1:]...)
+        }
+    }
+}

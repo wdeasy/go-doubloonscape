@@ -39,5 +39,11 @@ const (
 
     MAX_LOG_LENGTH      = 5
     MESSAGE_MAX         = 10
+
+    LEADERBOARD_RESET   = 300
+
+    MAX_GUILD_MEMBERS   = 1000
+
+    EMBED_COLOR = 0xf1c40f
 )
 

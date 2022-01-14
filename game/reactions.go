@@ -33,7 +33,7 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
     }
     
     if m.Emoji.Name == TREASURE_REACTION || m.Emoji.Name == PICKPOCKET_REACTION {
-        game.removeReaction(m.MessageID, m.Emoji.Name, game.dg.State.User.ID)  
+        game.removeReaction(m.MessageID, m.Emoji.Name, game.currentBotID)  
     }
     
     game.removeReaction(m.MessageID, m.Emoji.Name, m.UserID)
@@ -59,7 +59,15 @@ func (game *Game) checkEventReactions(message *discordgo.Message) {
     for _, e := range game.events {
         if e.Ready(game.getCooldown(e.Name)) {
             e.Up = true
+            game.addCurrentEvent(e.Name)
             game.addReaction(message.ID, game.getReaction(e.Name))
+        }        
+    }
+
+    for _, e := range game.currentEvents {
+        if !game.events[e].Up {
+            game.removeReaction(message.ID, game.getReaction(e), game.currentBotID)
+            game.removeCurrentEvent(e)
         }
     }
 }

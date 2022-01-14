@@ -38,6 +38,8 @@ func (game *Game) executePickPocket(pickpocketeer string) {
 
     game.addToLogs(game.pickPocketString(pickpocketeer, amount))
     game.setMessage()	
+
+    game.removeCurrentEvent(PICKPOCKET_NAME)    
 }
 
 //create a pickpocketstring for the logs

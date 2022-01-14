@@ -9,7 +9,7 @@ import (
 //generate the embed for the bot's message
 func (game *Game) generateEmbed() (discordgo.MessageEmbed) {
     embed := discordgo.MessageEmbed{
-        Color: 0xf1c40f,
+        Color: EMBED_COLOR,
         //Title: "𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡",
         Description: game.generateDescription(),
         Fields: []*discordgo.MessageEmbedField{

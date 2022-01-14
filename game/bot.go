@@ -61,7 +61,7 @@ func (game *Game) changeRoles(GuildID string, UserID string) (error){
         return fmt.Errorf("could not add captain role to user %s: %w", UserID, err)
     }	
 
-    members, err := game.dg.GuildMembers(GuildID, "", 1000)
+    members, err := game.dg.GuildMembers(GuildID, "", MAX_GUILD_MEMBERS)
     if err != nil {
         return fmt.Errorf("could not get guild members for %s: %w", GuildID, err)
     }	

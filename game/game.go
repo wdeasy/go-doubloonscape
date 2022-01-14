@@ -15,6 +15,8 @@ type Game struct {
     captains map[string]*storage.Captain
     currentCaptainID string
     currentMessageID string
+    currentBotID string
+    currentEvents []string
 
     destinations map[string]*storage.Destination
     treasure *storage.Treasure
@@ -41,6 +43,7 @@ func InitGame(storage *storage.Storage) (*Game, error) {
 
     game.dg = dg
     game.storage = storage
+    game.currentBotID = game.dg.State.User.ID
 
     err = game.LoadGame()
     if err != nil {
@@ -126,15 +129,20 @@ func (game *Game) GameTimer() {
                     game.setMessage()	                  
                     game.SaveGame()                    
                 }
+
+                if (i % LEADERBOARD_RESET == 0) {
+                    game.setLeaderboard()                  
+                }                
                 
                 if (time.Now().Day() != last.Day()) {
                     game.logTreasure()
-                }
-
-                if (time.Now().Hour() != last.Hour()) {
-                    game.setLeaderboard()
                     last = time.Now()
                 }
+
+                // if (time.Now().Hour() != last.Hour()) {
+                //     game.setLeaderboard()
+                //     last = time.Now()
+                // }
                 
                 i++
             case <- quit:

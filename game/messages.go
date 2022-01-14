@@ -32,7 +32,7 @@ func (game *Game) setMessage(){
     
     embed := game.generateEmbed()
 
-    if (messages[0].Author.ID == game.dg.State.User.ID) {
+    if (messages[0].Author.ID == game.currentBotID) {
         game.editMessage(&embed, messages[0])
         return
     } 
@@ -49,7 +49,7 @@ func (game *Game) setMessage(){
             continue
         }
 
-        if (s.Author.ID == game.dg.State.User.ID) {
+        if (s.Author.ID == game.currentBotID) {
             game.deleteMessage(s.ID)		
         }
     }
