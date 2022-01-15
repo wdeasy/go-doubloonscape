@@ -1,9 +1,9 @@
 package game
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
+    "fmt"
+    "strconv"
+    "strings"
 )
 
 //check if pickpocket is available
@@ -49,11 +49,10 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
     captainLength := getStringLength(game.captains[game.currentCaptainID].Name)
     pickpocketeerLength := getStringLength(game.captains[pickpocketeer].Name)
     
-    maxLength := 42
     amountLength := len(strconv.FormatInt(amount, 10))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := maxLength - amountLength - logLength + variableLength + 6
+    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 6
 
     if i < 4 {
         i = 4
@@ -72,8 +71,7 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
         captainN = i - pickpocketeerLength
     }
 
-    return fmt.Sprintf(log,
-            firstN(game.captains[pickpocketeer].Name,pickpocketeerN), 
+    return fmt.Sprintf(log, firstN(game.captains[pickpocketeer].Name,pickpocketeerN), 
             firstN(game.captains[game.currentCaptainID].Name,captainN), amount)
 }
 

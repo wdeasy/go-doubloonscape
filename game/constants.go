@@ -38,6 +38,7 @@ const (
     PICKPOCKET_MAX      = 20
 
     MAX_LOG_LENGTH      = 5
+    LOG_LINE_LENGTH     = 42
     MESSAGE_MAX         = 10
 
     LEADERBOARD_RESET   = 300
