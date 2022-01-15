@@ -59,17 +59,7 @@ func (game *Game) resetEvent(name string) {
     game.events[name].Up = false
 }
 
-//add event to current events
-func (game *Game) addCurrentEvent(name string) {
-    game.currentEvents[name] = game.events[name]
-}
-
-//remove event from current events
-func (game *Game) removeCurrentEvent(name string) {
-    delete(game.currentEvents, name)
-}
-
-
+//process the event reaction
 func(game *Game) EventReactionReceived(Name string, UserID string) {
     if !game.events[Name].Up {
         return
@@ -84,6 +74,7 @@ func(game *Game) EventReactionReceived(Name string, UserID string) {
      game.executeEvent(Name, UserID)   
 }
 
+//execute the appropriate event
 func(game *Game) executeEvent(Name string, UserID string) {
     switch Name {
     case PICKPOCKET_NAME:
@@ -92,14 +83,5 @@ func(game *Game) executeEvent(Name string, UserID string) {
         return
     }
     
-    game.setMessage()	
-    game.removeCurrentEvent(Name)      
-}
-
-func(game *Game) loadCurrentEvents(){
-    for _, e := range game.events {
-        if e.Up {
-            game.addCurrentEvent(e.Name)
-        }
-    }     
+    game.setMessage()
 }

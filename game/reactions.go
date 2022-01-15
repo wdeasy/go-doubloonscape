@@ -60,7 +60,7 @@ func (game *Game) checkEventReactions(message *discordgo.Message) {
     for _, e := range game.events {
         eventReaction := game.getReaction(e.Name)
         if game.isReactionInReactions(eventReaction, message.Reactions) {
-            if game.currentEvents[e.Name] == nil {
+            if !e.Up {
                 game.removeReaction(message.ID, eventReaction, game.currentBotID)
             }
             return
@@ -72,8 +72,7 @@ func (game *Game) checkEventReactions(message *discordgo.Message) {
         }
 
         if e.Ready(game.getCooldown(e.Name)) {
-            e.Up = true
-            game.addCurrentEvent(e.Name)            
+            e.Up = true        
             game.addReaction(message.ID, eventReaction)
         }
     }

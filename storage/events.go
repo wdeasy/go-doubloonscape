@@ -32,7 +32,7 @@ func (event *Event) Save() (error){
 
 //load events
 func (storage *Storage) LoadEvents() (map[string]*Event, error){
-    events := storage.CreateEventMap()
+    events := make(map[string]*Event)
 
     rows, err := storage.DB.Query(`SELECT * FROM events ORDER BY name ASC`)
     if err != nil {
@@ -68,9 +68,4 @@ func (storage *Storage) SaveEvents(events map[string]*Event) {
 //see if the event is off cooldown
 func (event *Event) Ready(cooldown int) (bool){
     return time.Now().After(event.Last.Add(time.Minute * time.Duration(cooldown)))
-}
-
-//create an empty event map
-func (storage *Storage) CreateEventMap() (map[string]*Event) {
-    return make(map[string]*Event)
 }
