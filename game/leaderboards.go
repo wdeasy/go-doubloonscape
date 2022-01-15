@@ -1,9 +1,10 @@
 package game
 
 import (
-    "fmt"
-    "sort"
-    "strings"
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 //leaderboard sorting
@@ -34,8 +35,18 @@ func (game *Game) printLeaderboard() (*string) {
 
     var b strings.Builder
     fmt.Fprintf(&b, "**𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡**\n") 
+
+    n := len(strconv.FormatInt(pl[0].Value,10))
+    if n >= 32 {
+        n = 32
+    }
+    if n < 7 {
+        n = 7
+    }
+    o := 34 - n
+        
     for j, k := range pl {
-        fmt.Fprintf(&b, "` %2d ` ` %-27s ` ` %7d `\n", j+1, firstN(game.captains[k.Key].Name,27), k.Value)
+        fmt.Fprintf(&b, "` %2d ` ` %*s ` ` %*d `\n", j+1, o, firstN(game.captains[k.Key].Name,27), n, k.Value)
     }
 
     String := b.String()
