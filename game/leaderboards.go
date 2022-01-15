@@ -46,7 +46,7 @@ func (game *Game) printLeaderboard() (*string) {
     o := 34 - n
         
     for j, k := range pl {
-        fmt.Fprintf(&b, "` %2d ` ` %*s ` ` %*d `\n", j+1, o, firstN(game.captains[k.Key].Name,27), n, k.Value)
+        fmt.Fprintf(&b, "` %2d ` ` %*s ` ` %*d `\n", j+1, o, firstN(game.captains[k.Key].Name,o), n, k.Value)
     }
 
     String := b.String()
