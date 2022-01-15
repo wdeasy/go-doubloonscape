@@ -2,6 +2,7 @@ package game
 
 import (
     "fmt"
+    "strings"
 
     "github.com/bwmarrin/discordgo"
 )
@@ -39,6 +40,7 @@ func (game *Game) generateEmbed() (discordgo.MessageEmbed) {
 
 //generate embed description
 func (game *Game) generateDescription() (string) {
+    //line :=  "~~ᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤ~~\n"
     return *game.stats.Leaderboard + *game.stats.Log + *game.stats.Destinations
 }
 
@@ -47,5 +49,5 @@ func firstN(s string, n int) string {
     if len(s) > n {
          return s[:n]
     }
-    return s
+    return strings.TrimSpace(s)
 }

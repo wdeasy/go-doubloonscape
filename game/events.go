@@ -61,30 +61,45 @@ func (game *Game) resetEvent(name string) {
 
 //add event to current events
 func (game *Game) addCurrentEvent(name string) {
-    for _, e := range game.currentEvents {
-        if name == e {
-            return
-        }
-    }
-
-    game.currentEvents = append(game.currentEvents, name)
+    game.currentEvents[name] = game.events[name]
 }
 
 //remove event from current events
 func (game *Game) removeCurrentEvent(name string) {
-    var tempCurrentEvents []string
+    delete(game.currentEvents, name)
+}
 
-    for _, e := range game.currentEvents {
-        if name == e {
-            continue
-        }
 
-        tempCurrentEvents = append(tempCurrentEvents, e)
-    }
-
-    if len(game.currentEvents) == len(tempCurrentEvents) {
+func(game *Game) EventReactionReceived(Name string, UserID string) {
+    if !game.events[Name].Up {
         return
     }
+    
+    game.resetEvent(Name)
+    
+    if UserID == game.currentCaptainID {
+        return
+    }
+    
+     game.executeEvent(Name, UserID)   
+}
 
-    game.currentEvents = tempCurrentEvents
+func(game *Game) executeEvent(Name string, UserID string) {
+    switch Name {
+    case PICKPOCKET_NAME:
+        game.executePickPocket(UserID) 
+    default:
+        return
+    }
+    
+    game.setMessage()	
+    game.removeCurrentEvent(Name)      
+}
+
+func(game *Game) loadCurrentEvents(){
+    for _, e := range game.events {
+        if e.Up {
+            game.addCurrentEvent(e.Name)
+        }
+    }     
 }

@@ -14,13 +14,15 @@ func (game *Game) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
     }
 
     matched, _ := regexp.MatchString(CAPTAIN_REGEX, m.Content)
-    if matched {
-        if _, ok := game.captains[m.Author.ID]; !ok {
-            game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
-        }
-
-        game.changeCaptainsInGameAndServer(m.GuildID, m.Author.ID)
+    if !matched {
+        return
     }
+
+    if _, ok := game.captains[m.Author.ID]; !ok {
+        game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
+    }
+
+    game.changeCaptainsInGameAndServer(m.GuildID, m.Author.ID)
 }
 
 //update the bot's message
@@ -80,13 +82,11 @@ func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.
         printLog(fmt.Sprintf("could not edit message: %s\n", err))
     }
 
-    game.checkEventReactions(message)
+    game.checkReactions(message)
 }
 
 //create a new bot message
 func (game *Game) newMessage(embed *discordgo.MessageEmbed) (string) { 
-    game.treasure.Up = false
-
     msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
     if err != nil {
         printLog(fmt.Sprintf("could not create new message: %s\n", err))
@@ -96,12 +96,6 @@ func (game *Game) newMessage(embed *discordgo.MessageEmbed) (string) {
     game.addReactions(msg)
 
     return msg.ID
-}
-
-//create a new captain with info from the discord message
-func (game *Game) addCaptainFromDiscordMessage(UserID string, Nick string, UserName string) {
-    name := getName(Nick, UserName)
-    game.createCaptain(UserID, name)	
 }
 
 //return the correct discord name

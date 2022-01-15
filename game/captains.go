@@ -9,6 +9,10 @@ import (
 
 //main function for handling all the steps of changing out the current captain
 func (game *Game) changeCaptainsInGameAndServer(GuildID string, UserID string) {
+    if game.currentCaptainID == UserID {
+        return
+    }
+
     err := game.changeRoles(GuildID, UserID)
     if err != nil {
         printLog(fmt.Sprintf("could not change roles: %s\n", err))
@@ -103,4 +107,37 @@ func (game *Game) randomCaptainID() (string, error) {
 //generate a captain string for the logs
 func (game *Game) captainString() (string) {
     return fmt.Sprintf("%s 𝔦𝔰 𝔱𝔥𝔢 𝔠𝔞𝔭𝔱𝔞𝔦𝔫 𝔫𝔬𝔴", firstN(game.captains[game.currentCaptainID].Name,10))
+}
+
+//create a new captain with info from the discord reaction
+func (game *Game) addCaptainFromDiscordReaction(GuildID string, UserID string) (error) {
+    m, err := game.dg.GuildMember(GuildID, UserID)
+    if err != nil {
+        return fmt.Errorf("could not get guild member info %s: %w", UserID, err)
+    }
+        
+    name := getName(m.Nick, m.User.Username)
+    
+    if m.User.Bot {
+        return fmt.Errorf("%s is a bot", name)
+    }
+
+    game.createCaptain(UserID, name)	
+
+    return nil
+}
+
+//create a new captain with info from the discord message
+func (game *Game) addCaptainFromDiscordMessage(UserID string, Nick string, UserName string) {
+    name := getName(Nick, UserName)
+    game.createCaptain(UserID, name)	
+}
+
+func (game *Game) setPrestige(UserID string) {
+    if UserID != game.currentCaptainID {
+        return
+    }
+
+    game.captains[UserID].AddPrestige(PRESTIGE_CONVERSION)
+    game.setMessage()	
 }

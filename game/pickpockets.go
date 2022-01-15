@@ -37,9 +37,6 @@ func (game *Game) executePickPocket(pickpocketeer string) {
     game.captains[pickpocketeer].GiveDoubloons(amount)
 
     game.addToLogs(game.pickPocketString(pickpocketeer, amount))
-    game.setMessage()	
-
-    game.removeCurrentEvent(PICKPOCKET_NAME)    
 }
 
 //create a pickpocketstring for the logs
@@ -48,3 +45,4 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
             firstN(game.captains[pickpocketeer].Name,10), 
             firstN(game.captains[game.currentCaptainID].Name,10), amount)
 }
+

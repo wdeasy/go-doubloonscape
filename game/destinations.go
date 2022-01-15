@@ -95,15 +95,15 @@ func (game *Game) destinationsString() (*string) {
     var b strings.Builder
 
     if time.Now().Before(game.destinations[ATLANTIS_NAME].End) {
-        fmt.Fprintf(&b, "%s%s%d%s\n", "` 𝔄𝔱𝔩𝔞𝔫𝔱𝔦𝔰  ` ", "` 𝔇𝔬𝔲𝔟𝔩𝔬𝔬𝔫𝔰 𝔪𝔲𝔩𝔱𝔦𝔭𝔩𝔦𝔢𝔡 𝔟𝔶 ", game.destinations["atlantis"].Amount, " `")
+        fmt.Fprintf(&b, "` %s  ` ` %s %d `\n", "𝔄𝔱𝔩𝔞𝔫𝔱𝔦𝔰", "𝔇𝔬𝔲𝔟𝔩𝔬𝔬𝔫𝔰 𝔪𝔲𝔩𝔱𝔦𝔭𝔩𝔦𝔢𝔡 𝔟𝔶", game.destinations["atlantis"].Amount)
     }
 
     if time.Now().Before(game.destinations[BERMUDA_NAME].End) {
-        fmt.Fprintf(&b, "%s%s%d%s\n", "` 𝔅𝔢𝔯𝔪𝔲𝔡𝔞 ` ", "` 𝔗𝔦𝔪𝔢 𝔞𝔩𝔱𝔢𝔯𝔢𝔡 𝔟𝔶 ", game.destinations["bermuda"].Amount, " 𝔭𝔢𝔯𝔠𝔢𝔫𝔱 `")
+        fmt.Fprintf(&b, "` %s ` ` %s %d %s `\n", "𝔅𝔢𝔯𝔪𝔲𝔡𝔞", "𝔗𝔦𝔪𝔢 𝔞𝔩𝔱𝔢𝔯𝔢𝔡 𝔟𝔶", game.destinations["bermuda"].Amount, "𝔭𝔢𝔯𝔠𝔢𝔫𝔱")
     }	
 
     if b.Len() == 0 {
-        fmt.Fprintf(&b, "%s\n", "` 𝔗𝔥𝔢 𝔖𝔢𝔳𝔢𝔫 𝔖𝔢𝔞𝔰 ` ")        
+        fmt.Fprintf(&b, "` %s `\n", "𝔗𝔥𝔢 𝔖𝔢𝔳𝔢𝔫 𝔖𝔢𝔞𝔰")               
     }
 
     String := "**𝔇𝔢𝔰𝔱𝔦𝔫𝔞𝔱𝔦𝔬𝔫𝔰**\n" + b.String()

@@ -52,8 +52,8 @@ func (treasure *Treasure) Save() (error){
 }
 
 //increment treasure by 1 each minute
-func (treasure *Treasure) Increment() {
-    treasure.Amount++
+func (treasure *Treasure) Increment(goldModifier float64) {
+    treasure.Amount = treasure.Amount + int(1 * int(goldModifier))
 }
 
 //reset treasure after it is claimed

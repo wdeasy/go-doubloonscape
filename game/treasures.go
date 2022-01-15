@@ -7,6 +7,11 @@ import (
 
 //give a random amount of gold to a captain
 func (game *Game) giveTreasure(UserID string) {
+    if !game.treasure.Up {
+        return 
+    }
+
+    game.treasure.Up = false    
     captain := game.captains[UserID]
     captain.Gold = captain.Gold + int64(game.treasure.Amount)
     game.captains[UserID] = captain
@@ -28,7 +33,7 @@ func (game *Game) checkTreasure() {
         game.giveTreasure(game.currentCaptainID)
     }
 
-    game.treasure.Increment()
+    game.treasure.Increment(game.goldModifier())
 }
 
 //generate a treasure string for the logs

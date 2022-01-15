@@ -16,7 +16,7 @@ type Game struct {
     currentCaptainID string
     currentMessageID string
     currentBotID string
-    currentEvents []string
+    currentEvents map[string]*storage.Event
 
     destinations map[string]*storage.Destination
     treasure *storage.Treasure
@@ -44,6 +44,7 @@ func InitGame(storage *storage.Storage) (*Game, error) {
     game.dg = dg
     game.storage = storage
     game.currentBotID = game.dg.State.User.ID
+    game.currentEvents = game.storage.CreateEventMap()
 
     err = game.LoadGame()
     if err != nil {
@@ -88,7 +89,9 @@ func (game *Game) LoadGame() (error){
     game.logs, err = game.storage.LoadLogs(MAX_LOG_LENGTH)
     if err != nil {
         return fmt.Errorf("could not load logs: %w", err)
-    }    
+    }
+    
+    game.loadCurrentEvents()
 
     return nil
 }
