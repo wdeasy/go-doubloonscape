@@ -47,7 +47,7 @@ func (game *Game) generateDescription() (string) {
 //truncate names
 func firstN(s string, n int) string {
     if len(s) > n {
-         return s[:n]
+         return strings.TrimSpace(s[:n])
     }
-    return strings.TrimSpace(s)
+    return s
 }
