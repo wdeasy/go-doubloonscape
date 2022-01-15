@@ -45,23 +45,42 @@ func (game *Game) executePickPocket(pickpocketeer string) {
 func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) {
     log := "%s 𝔭𝔦𝔠𝔨𝔭𝔬𝔠𝔨𝔢𝔱𝔰 %s 𝔣𝔬𝔯 %d"
 
-    var logLength int
-    for range log {
-        logLength++
-    }
+    logLength := getStringLength(log) + 6
+    captainLength := getStringLength(game.captains[game.currentCaptainID].Name)
+    pickpocketeerLength := getStringLength(game.captains[pickpocketeer].Name)
     
     maxLength := 42
     amountLength := len(strconv.FormatInt(amount, 10))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := int(float64((maxLength - amountLength - logLength + variableLength)/2))
+    i := maxLength - amountLength - logLength + variableLength
 
-    if i < 2 {
-        i = 2
+    if i < 4 {
+        i = 4
+    }
+
+    captainN := i/2
+    pickpocketeerN := i/2
+
+    if captainLength < i/2 {
+        captainN = captainLength
+        pickpocketeerN = i - captainLength
+    }
+
+    if pickpocketeerLength < i/2 {
+        pickpocketeerN = pickpocketeerLength
+        captainN = i - pickpocketeerLength
     }
 
     return fmt.Sprintf(log,
-            firstN(game.captains[pickpocketeer].Name,i), 
-            firstN(game.captains[game.currentCaptainID].Name,i), amount)
+            firstN(game.captains[pickpocketeer].Name,pickpocketeerN), 
+            firstN(game.captains[game.currentCaptainID].Name,captainN), amount)
 }
 
+func getStringLength(String string) (int) {
+    var StringLength int
+    for range String {
+        StringLength++
+    }
+    return StringLength
+}
