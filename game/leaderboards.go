@@ -37,16 +37,18 @@ func (game *Game) printLeaderboard() (*string) {
     fmt.Fprintf(&b, "**𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡**\n") 
 
     n := len(strconv.FormatInt(pl[0].Value,10))
-    if n >= 32 {
-        n = 32
+    p := len(strconv.Itoa(len(pl)))
+
+    if n >= (34 - p) {
+        n = (34 - p)
     }
     if n < 7 {
         n = 7
     }
-    o := 34 - n
+    o := 36 - n - p
         
     for j, k := range pl {
-        fmt.Fprintf(&b, "` %2d ` ` %-*s ` ` %*d `\n", j+1, o, firstN(game.captains[k.Key].Name,o), n, k.Value)
+        fmt.Fprintf(&b, "` %*d ` ` %-*s ` ` %*d `\n", p, j+1, o, firstN(game.captains[k.Key].Name,o), n, k.Value)
     }
 
     String := b.String()
