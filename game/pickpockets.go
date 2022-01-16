@@ -52,7 +52,7 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
     amountLength := len(strconv.FormatInt(amount, 10))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 6
+    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 4
 
     if i < 4 {
         i = 4

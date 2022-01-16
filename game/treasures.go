@@ -48,7 +48,7 @@ func (game *Game) treasureString(UserID string, amount int) (string) {
     amountLength := len(strconv.Itoa(amount))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 6
+    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 4
 
     if userLength > i {
         userLength = i

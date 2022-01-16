@@ -19,6 +19,10 @@ func (game *Game) checkEvent(name string, cooldown int, chance int) (bool){
         return false	
     }
 
+    if game.currentCaptainID == "" {
+        return false
+    }
+
     if !game.events[name].Ready(game.getCooldown(name)) {
         return false
     }
