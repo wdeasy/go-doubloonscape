@@ -34,7 +34,7 @@ func (game *Game) setLogs() {
 func (game *Game) logsString() (*string) {
     var b strings.Builder
 
-    fmt.Fprintf(&b, "%s\n", "```")
+    fmt.Fprintf(&b, "%s\n", "```fix")
     for _, v := range game.logs {
         fmt.Fprintf(&b, " %s\n", v.Text)
     }

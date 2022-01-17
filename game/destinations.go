@@ -82,6 +82,10 @@ func RandInt64(lower, upper int64) int64 {
     rand.Seed(time.Now().UnixNano())
     rng := upper - lower
 
+    if upper <= 0 {
+        return 0
+    }
+
     return rand.Int63n(rng) + lower
 }
 

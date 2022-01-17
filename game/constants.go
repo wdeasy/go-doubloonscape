@@ -45,7 +45,7 @@ const (
 
     MAX_GUILD_MEMBERS   = 1000
 
-    //EMBED_COLOR         = 0xf1c40f //yellow
-    EMBED_COLOR         = 0x2f3136 //grey
+    EMBED_COLOR         = 0xf1c40f //yellow
+    //EMBED_COLOR         = 0x2f3136 //grey
 )
 
