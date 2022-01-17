@@ -35,16 +35,17 @@ const (
     PICKPOCKET_REACTION = "💰"
     PICKPOCKET_COOLDOWN = 60
     PICKPOCKET_CHANCE   = 1
-    PICKPOCKET_MAX      = 20
+    PICKPOCKET_MAX      = 10
 
-    MAX_LOG_LENGTH      = 5
-    LOG_LINE_LENGTH     = 42
+    MAX_LOG_LINES       = 10
+    LOG_LINE_LENGTH     = 54
     MESSAGE_MAX         = 10
 
     LEADERBOARD_RESET   = 300
 
     MAX_GUILD_MEMBERS   = 1000
 
-    EMBED_COLOR         = 0xf1c40f
+    //EMBED_COLOR         = 0xf1c40f //yellow
+    EMBED_COLOR         = 0x2f3136 //grey
 )
 

@@ -84,7 +84,7 @@ func (game *Game) LoadGame() (error){
         return fmt.Errorf("could not load events: %w", err)
     }
 
-    game.logs, err = game.storage.LoadLogs(MAX_LOG_LENGTH)
+    game.logs, err = game.storage.LoadLogs(MAX_LOG_LINES)
     if err != nil {
         return fmt.Errorf("could not load logs: %w", err)
     }

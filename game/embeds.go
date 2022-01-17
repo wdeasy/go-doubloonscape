@@ -41,7 +41,7 @@ func (game *Game) generateEmbed() (discordgo.MessageEmbed) {
 //generate embed description
 func (game *Game) generateDescription() (string) {
     //line :=  "~~ᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤₑᵤₔᵤ~~\n"
-    return *game.stats.Leaderboard + *game.stats.Log + *game.stats.Destinations
+    return *game.stats.Leaderboard + *game.stats.Destinations
 }
 
 //truncate names

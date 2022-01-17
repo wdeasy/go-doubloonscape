@@ -43,7 +43,7 @@ func (game *Game) executePickPocket(pickpocketeer string) {
 
 //create a pickpocketstring for the logs
 func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) {
-    log := "%s 𝔭𝔦𝔠𝔨𝔭𝔬𝔠𝔨𝔢𝔱𝔰 %s 𝔣𝔬𝔯 %d"
+    log := "%s pickpockets %s for %d"
 
     logLength := getStringLength(log)
     captainLength := getStringLength(game.captains[game.currentCaptainID].Name)
@@ -52,7 +52,7 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
     amountLength := len(strconv.FormatInt(amount, 10))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 4
+    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength
 
     if i < 4 {
         i = 4
@@ -75,6 +75,7 @@ func (game *Game) pickPocketString(pickpocketeer string, amount int64) (string) 
             firstN(game.captains[game.currentCaptainID].Name,captainN), amount)
 }
 
+//count correct length with special characters
 func getStringLength(String string) (int) {
     var StringLength int
     for range String {

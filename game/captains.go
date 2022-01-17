@@ -139,5 +139,9 @@ func (game *Game) setPrestige(UserID string) {
     }
 
     game.captains[UserID].AddPrestige(PRESTIGE_CONVERSION)
-    game.setMessage()	
+    game.setMessage()
+    
+    if game.captains[UserID].Prestige > game.treasure.Prestige {
+        game.treasure.SetPrestige(game.captains[UserID].Prestige)
+    }
 }

@@ -39,16 +39,16 @@ func (game *Game) checkTreasure() {
 }
 
 //generate a treasure string for the logs
-func (game *Game) treasureString(UserID string, amount int) (string) {
-    log := "%s 𝔩𝔬𝔬𝔱𝔢𝔡 𝔱𝔥𝔢 𝔗𝔯𝔢𝔞𝔰𝔲𝔯𝔢 𝔣𝔬𝔯 %d"    
+func (game *Game) treasureString(UserID string, amount int64) (string) {
+    log := "%s looted the Treasure for %d"    
 
     logLength := getStringLength(log)
     userLength := getStringLength(game.captains[UserID].Name)
     
-    amountLength := len(strconv.Itoa(amount))
+    amountLength := len(strconv.FormatInt(amount, 10))
     variableLength := (strings.Count(log, "%")*2)
 
-    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength + 4
+    i := LOG_LINE_LENGTH - amountLength - logLength + variableLength
 
     if userLength > i {
         userLength = i
@@ -59,5 +59,5 @@ func (game *Game) treasureString(UserID string, amount int) (string) {
 
 //add the treasure amount to the logs
 func (game *Game) logTreasure() {
-    game.addToLogs(fmt.Sprintf("𝔗𝔥𝔢 𝔱𝔯𝔢𝔞𝔰𝔲𝔯𝔢 𝔠𝔥𝔢𝔰𝔱 𝔥𝔞𝔰 𝔤𝔯𝔬𝔴𝔫 𝔱𝔬 %d", game.treasure.Amount))
+    game.addToLogs(fmt.Sprintf("The treasure chest has grown to %d", game.treasure.Amount))
 }

@@ -75,19 +75,21 @@ func (game *Game) getMessages() ([]*discordgo.Message){
     return messages
 } 
 
-//edit the existing bot message
-func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.Message) { 
-    _, err := game.dg.ChannelMessageEditEmbed(Channel, message.ID, embed)	
-    if err != nil {
-        printLog(fmt.Sprintf("could not edit message: %s\n", err))
-    }
+//return the correct discord name
+func getName(nick string, user string) (string) {
+    if (nick != "") {
+        return nick
+    } 
 
-    game.checkReactions(message)
+    return user
 }
 
 //create a new bot message
 func (game *Game) newMessage(embed *discordgo.MessageEmbed) (string) { 
-    msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
+    //msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
+    msg, err := game.dg.ChannelMessageSendComplex(Channel, game.generateMessageSend(embed))
+    
+    
     if err != nil {
         printLog(fmt.Sprintf("could not create new message: %s\n", err))
         return ""
@@ -98,11 +100,34 @@ func (game *Game) newMessage(embed *discordgo.MessageEmbed) (string) {
     return msg.ID
 }
 
-//return the correct discord name
-func getName(nick string, user string) (string) {
-    if (nick != "") {
-        return nick
-    } 
+//edit the existing bot message
+func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.Message) { 
+    msg, err := game.dg.ChannelMessageEditComplex(game.generateMessageEdit(message.ID, embed))
+    if err != nil {
+        printLog(fmt.Sprintf("could not edit message: %s\n", err))
+    }
 
-    return user
+    game.checkReactions(msg)
+}
+
+//generate MessageSend object for complex message send
+func (game *Game) generateMessageSend(embed *discordgo.MessageEmbed) (*discordgo.MessageSend) {
+    message := discordgo.MessageSend{
+        Content: *game.stats.Log,
+        Embed: embed,
+    }
+
+    return &message
+}
+
+//generate MessageEdit object for complex message edit
+func (game *Game) generateMessageEdit(messageID string, embed *discordgo.MessageEmbed) (*discordgo.MessageEdit) {
+    message := discordgo.MessageEdit{
+        Content: game.stats.Log,
+        Embed: embed,
+        ID: messageID,
+        Channel: Channel,
+    }
+
+    return &message
 }

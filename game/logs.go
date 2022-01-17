@@ -12,7 +12,7 @@ import (
 func (game *Game) addToLogs(Text string) {
     log := game.newLog(Text)
 
-    if len(game.logs) == MAX_LOG_LENGTH {
+    if len(game.logs) == MAX_LOG_LINES {
         _, game.logs = game.logs[0], game.logs[1:]
     }
     game.logs = append(game.logs, &log)
@@ -34,16 +34,18 @@ func (game *Game) setLogs() {
 func (game *Game) logsString() (*string) {
     var b strings.Builder
 
+    fmt.Fprintf(&b, "%s\n", "```")
     for _, v := range game.logs {
-        fmt.Fprintf(&b, "` %s `\n", v.Text)
+        fmt.Fprintf(&b, " %s\n", v.Text)
     }
 
-    if b.Len() == 0 {
-        fmt.Fprintf(&b, "` ℜ𝔢𝔡 𝔖𝔨𝔦𝔢𝔰 𝔞𝔱 𝔫𝔦𝔤𝔥𝔱 `")
-    }
+    if len(game.logs) == 0 {
+        fmt.Fprintf(&b, " ℜ𝔢𝔡 𝔖𝔨𝔦𝔢𝔰 𝔞𝔱 𝔫𝔦𝔤𝔥𝔱")
+    }    
+    fmt.Fprintf(&b, "%s\n", "```")
 
-    String := "**ℭ𝔞𝔭𝔱𝔞𝔦𝔫'𝔰 𝔏𝔬𝔤**\n" + b.String()  
-    return &String	
+    String := b.String()
+    return &String
 }
 
 //print log information to the console
