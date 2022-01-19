@@ -105,6 +105,7 @@ func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.
     msg, err := game.dg.ChannelMessageEditComplex(game.generateMessageEdit(message.ID, embed))
     if err != nil {
         printLog(fmt.Sprintf("could not edit message: %s\n", err))
+        return
     }
 
     game.checkReactions(msg)
