@@ -108,7 +108,7 @@ func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.
         return
     }
 
-    game.checkReactions(msg)
+    game.addReactions(msg)
 }
 
 //generate MessageSend object for complex message send
