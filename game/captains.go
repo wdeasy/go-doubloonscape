@@ -48,6 +48,15 @@ func (game *Game) incrementCaptain() {
         return
     }
 
+    game.captains[game.currentCaptainID].IncrementDoubloons(game.goldModifier())
+}
+
+//increment captains gold by one
+func (game *Game) incrementCaptainByOne() {
+    if game.currentCaptainID == "" {
+        return
+    }
+
     game.captains[game.currentCaptainID].IncrementDoubloon(game.goldModifier())
 }
 
