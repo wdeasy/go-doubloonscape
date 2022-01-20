@@ -36,6 +36,10 @@ func (game *Game) executePickPocket(pickpocketeer string) {
         return
     }
 
+    if amount > game.captains[game.currentCaptainID].Gold {
+        amount = game.captains[game.currentCaptainID].Gold
+    }
+
     game.captains[game.currentCaptainID].TakeDoubloons(amount)
     game.captains[pickpocketeer].GiveDoubloons(amount)
 

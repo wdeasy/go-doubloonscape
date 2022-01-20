@@ -20,7 +20,7 @@ const (
     DEFAULT_COOLDOWN   = 60
     DEFAULT_REACTION   = "⚠️"	
 
-    EMBED_COLOR         = 0xf1c40f //yellow 0x2f3136 //grey
+    EMBED_COLOR         = 0xb58900 //gold // 0xf1c40f //yellow 0x2f3136 //grey
 
     INCREMENT_REACTION = "🪙"
 
@@ -42,7 +42,7 @@ const (
     TREASURE_REACTION  = "👑"
 
     MAX_LOG_LINES       = 10
-    LOG_LINE_LENGTH     = 54
+    LOG_LINE_LENGTH     = 44
     MESSAGE_MAX         = 10
 
 
