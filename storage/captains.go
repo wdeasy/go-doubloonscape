@@ -97,8 +97,10 @@ func (captain *Captain) PromoteCaptain() {
 
 //convert captain gold to prestige
 func (captain *Captain) AddPrestige(PrestigeConversion float64) {
-    captain.Prestige += ((float64(captain.Gold)/math.Floor(captain.Prestige)) * PrestigeConversion)
-    captain.Gold = 0
+    for captain.Gold > 0 {
+        captain.Prestige += (1/math.Floor(captain.Prestige)) * PrestigeConversion
+        captain.Gold -= 1
+    }
 
     if captain.Prestige < 1 {
         captain.Prestige = 1
