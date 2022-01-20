@@ -1,10 +1,10 @@
 package game
 
 import (
-	"fmt"
-	"sort"
-	"strconv"
-	"strings"
+    "fmt"
+    "sort"
+    "strconv"
+    "strings"
 )
 
 //leaderboard sorting
@@ -23,6 +23,12 @@ func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
 
 //format leaderboard to string
 func (game *Game) printLeaderboard() (*string) {
+    var b strings.Builder
+
+    if game.currentCaptainID == "" {
+        String := b.String()
+        return &String
+    }
 
     pl := make(PairList, len(game.captains))
     i := 0
@@ -33,11 +39,16 @@ func (game *Game) printLeaderboard() (*string) {
 
     sort.Sort(sort.Reverse(pl))
 
-    var b strings.Builder
+    
     fmt.Fprintf(&b, "**𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡**\n") 
 
     placeLength := len(strconv.Itoa(len(pl)))
     doubloonLength := len(strconv.FormatInt(pl[0].Value,10))
+
+    if len(strconv.FormatInt(pl[len(pl)-1].Value,10)) > doubloonLength {
+        doubloonLength = len(strconv.FormatInt(pl[len(pl)-1].Value,10))
+    }
+
     nameLength := 36 - doubloonLength - placeLength
     
     if doubloonLength > (34 - placeLength) {

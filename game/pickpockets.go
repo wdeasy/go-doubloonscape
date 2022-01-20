@@ -2,6 +2,7 @@ package game
 
 import (
     "fmt"
+    "math"
     "strconv"
     "strings"
 )
@@ -28,7 +29,7 @@ func (game *Game) checkPickPocket() {
 
 //execute the pickpocket
 func (game *Game) executePickPocket(pickpocketeer string) {
-    max := float64(game.captains[game.currentCaptainID].Gold) * (float64(PICKPOCKET_MAX) * .01)
+    max := math.Floor(game.captains[game.currentCaptainID].Prestige) * 60
     amount := RandInt64(1, int64(max))
 
     if amount == 0 {

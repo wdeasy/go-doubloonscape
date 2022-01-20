@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"database/sql"
-	"fmt"
-	"math"
+    "database/sql"
+    "fmt"
+    "math"
 )
 
 type Treasure struct {
@@ -56,7 +56,7 @@ func (treasure *Treasure) Save() (error){
 
 //increment treasure by 1 each minute
 func (treasure *Treasure) Increment(goldModifier float64) {
-    treasure.Amount = treasure.Amount + int64(goldModifier * math.Floor(treasure.Prestige))
+    treasure.Amount += int64(goldModifier * math.Floor(treasure.Prestige))
 }
 
 //reset treasure after it is claimed

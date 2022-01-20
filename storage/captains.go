@@ -97,13 +97,18 @@ func (captain *Captain) PromoteCaptain() {
 
 //convert captain gold to prestige
 func (captain *Captain) AddPrestige(PrestigeConversion float64) {
-    captain.Prestige = captain.Prestige + (float64(captain.Gold) * PrestigeConversion)
+    captain.Prestige += ((float64(captain.Gold)/math.Floor(captain.Prestige)) * PrestigeConversion)
     captain.Gold = 0
 }
 
 //increment captain doubloons by turn or reaction
 func (captain *Captain) IncrementDoubloons(goldModifier float64) {
-    captain.Gold = captain.Gold + int64(goldModifier * math.Floor(captain.Prestige))
+    captain.Gold += int64(goldModifier * math.Floor(captain.Prestige))
+}
+
+//increment captain doubloons by turn or reaction
+func (captain *Captain) IncrementDoubloon(goldModifier float64) {
+    captain.Gold += int64(goldModifier * 1)
 }
 
 //award x amount of doubloons

@@ -79,9 +79,4 @@ func (game *Game) changeRoles(GuildID string, UserID string) (error){
     }
 
     return nil
-} 
-
-
-
-
-
+}

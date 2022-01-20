@@ -48,7 +48,7 @@ func (game *Game) incrementCaptain() {
         return
     }
 
-    game.captains[game.currentCaptainID].IncrementDoubloons((game.goldModifier()))
+    game.captains[game.currentCaptainID].IncrementDoubloon(game.goldModifier())
 }
 
 //create a captain and add it to the map
@@ -133,6 +133,7 @@ func (game *Game) addCaptainFromDiscordMessage(UserID string, Nick string, UserN
     game.createCaptain(UserID, name)	
 }
 
+//used to update the captains prestige
 func (game *Game) setPrestige(UserID string) {
     if UserID != game.currentCaptainID {
         return
