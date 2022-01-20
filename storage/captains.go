@@ -99,6 +99,10 @@ func (captain *Captain) PromoteCaptain() {
 func (captain *Captain) AddPrestige(PrestigeConversion float64) {
     captain.Prestige += ((float64(captain.Gold)/math.Floor(captain.Prestige)) * PrestigeConversion)
     captain.Gold = 0
+
+    if captain.Prestige < 1 {
+        captain.Prestige = 1
+    }    
 }
 
 //increment captain doubloons by turn or reaction
@@ -119,4 +123,8 @@ func (captain *Captain) GiveDoubloons(amount int64) {
 //remove x amount of doubloons
 func (captain *Captain) TakeDoubloons(amount int64) {
     captain.Gold -= amount
+
+    if captain.Gold < 0 {
+        captain.Gold = 0
+    }
 }
