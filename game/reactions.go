@@ -32,7 +32,7 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
             game.EventReactionReceived(PICKPOCKET_NAME, m.UserID)
     }
     
-    if m.Emoji.Name == TREASURE_REACTION || m.Emoji.Name == PICKPOCKET_REACTION {
+    if m.Emoji.Name != INCREMENT_REACTION {
         game.removeReaction(m.MessageID, m.Emoji.Name, game.currentBotID)  
     }
     
