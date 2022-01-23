@@ -2,7 +2,6 @@ package game
 
 import (
     "fmt"
-    "math/rand"
     "net/url"
 
     "github.com/bwmarrin/discordgo"
@@ -16,135 +15,123 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
 
     err := game.checkIfCaptainExists(m.UserID, m.GuildID)
     if err != nil {
-        fmt.Printf("error while checking if captain %s exists: %s\n", m.UserID, err)
+        printLog(fmt.Sprintf("error while checking if captain %s exists: %s\n", m.UserID, err))
         return
     }   
     
     switch m.Emoji.Name {
-        case "🪙":
-            game.coinEmoji()
-        case "🏴‍☠️":
-            game.pirateEmoji(m.UserID, m.GuildID)
-        case "🔱":
-            game.tridentEmoji(m.UserID)
-        case "👑":
-            game.crownEmoji(m.UserID)
-    }	
+        case INCREMENT_REACTION:
+            game.incrementCaptainByOne()
+        case CAPTAIN_REACTION:
+            game.changeCaptainsInGameAndServer(m.GuildID, m.UserID)
+        case PRESTIGE_REACTION:
+            game.setPrestige(m.UserID)
+        case TREASURE_REACTION:           
+            game.giveTreasure(m.UserID)
+        case PICKPOCKET_REACTION:             
+            game.EventReactionReceived(PICKPOCKET_NAME, m.UserID)
+    }
     
-    err = game.dg.MessageReactionRemove(Channel, m.MessageID, url.QueryEscape(m.Emoji.Name), m.UserID)
-    if err != nil {
-        fmt.Printf("could not remove reaction %s from %s: %s\n", m.Emoji.Name, game.captains[m.UserID].Name, err)
-    }    
-
+    if m.Emoji.Name != INCREMENT_REACTION {
+        game.removeReaction(m.MessageID, m.Emoji.Name, game.currentBotID)  
+    }
+    
+    game.removeReaction(m.MessageID, m.Emoji.Name, m.UserID)
 }
 
 //add reactions to a message
 func (game *Game) addReactions(message *discordgo.Message) {
-    err := game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🪙"))
-    if err != nil {
-        fmt.Printf("could not add 🪙 reaction to new message %s: %s\n", message.ID, err)
-    }	
-
-    err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🔱"))
-    if err != nil {
-        fmt.Printf("could not add 🔱 reaction to new message %s: %s\n", message.ID, err)
-    }	
-
-    err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("🏴‍☠️"))
-    if err != nil {
-        fmt.Printf("could not add 🏴‍☠️ reaction to new message %s: %s\n", message.ID, err)
-    }	
-
-    if rand.Intn(100) == 2 {
-        treasure = true
-        err = game.dg.MessageReactionAdd(Channel, message.ID, url.QueryEscape("👑"))
-        if err != nil {
-            fmt.Printf("could not add 👑 reaction to new message %s: %s\n", message.ID, err)
-        }			
-    }
-}
-
-//function for when the coin(🪙) reaction is used
-func (game *Game) coinEmoji() {
-    game.incrementCaptain()
-}
-
-//function for when the pirate(🏴‍☠️) reaction is used
-func (game *Game) pirateEmoji(UserID string, GuildID string) {
-    if UserID == game.currentCaptainID {
-        return
-    }
-
-    game.newCaptain(GuildID, UserID)
-}
-
-//function for when the trident(🔱) reaction is used
-func (game *Game) tridentEmoji(UserID string) {
-    if UserID != game.currentCaptainID {
-        return
-    }
-
-    game.addPrestige(UserID)
-    game.setMessage()		
-}
-
-//function for when the crown(👑) reaction is used
-func (game *Game) crownEmoji(UserID string) {
-    if !treasure {
-        fmt.Printf("%s clicked on 👑 but the treasure is not up yet\n", UserID)
-        return 
+    reactions := []string{INCREMENT_REACTION, PRESTIGE_REACTION, CAPTAIN_REACTION}
+    for _, e := range reactions {
+        game.addReaction(message.ID, e)
     } 
 
-    treasure = false
+    game.checkReactions(message)
+}
 
-    game.giveTreasure(UserID)
-    game.setMessage()
+//see if additional reactions can be added
+func (game *Game) checkReactions(message *discordgo.Message) { 
+    game.checkTreasureReaction(message)
+    game.checkEventReactions(message)
+}
 
-    messages, err := game.dg.ChannelMessages(Channel, 100, "", "", "")
-    if err != nil {
-        fmt.Printf("could not retrieve messages for channel %s: %s\n", Channel, err)
-        return
-    }
-
-    for _, s := range messages {
-        if s.Author.ID == game.dg.State.User.ID {
-            err := game.dg.MessageReactionRemove(Channel, s.ID, url.QueryEscape("👑"), game.dg.State.User.ID)
-
-            if err != nil {
-                fmt.Printf("could not remove 👑 reaction from bot message %s: %s\n", s.ID, err)
-                return
+//logic to see if event reactions should be up
+func (game *Game) checkEventReactions(message *discordgo.Message) {
+    for _, e := range game.events {
+        eventReaction := game.getReaction(e.Name)
+        if game.isReactionInReactions(eventReaction, message.Reactions) {
+            if !e.Up {
+                game.removeReaction(message.ID, eventReaction, game.currentBotID)
             }
+            return
+        }
+
+        if e.Up {
+            game.addReaction(message.ID, eventReaction)
+            return
+        }
+
+        if e.Ready(game.getCooldown(e.Name)) {
+            e.Up = true        
+            game.addReaction(message.ID, eventReaction)
         }
     }
 }
 
-//create a captain in the map if it does not exist
-func (game *Game) checkIfCaptainExists(UserID string, GuildID string) (error) {
-    if _, ok := game.captains[UserID]; !ok {
-        err := game.addCaptainFromDiscordReaction(GuildID, UserID)
-
-        if err != nil {
-            return fmt.Errorf("could not add captain %s from discord reaction: %w", UserID, err)
-        }		
+//logic to see if treasure reaction should be up
+func (game *Game) checkTreasureReaction(message *discordgo.Message) {
+    if game.isReactionInReactions(TREASURE_REACTION, message.Reactions) {
+        if !game.treasure.Up {
+            game.removeReaction(message.ID, TREASURE_REACTION, game.currentBotID)
+        }
+        return
     }
-    
-    return nil
+
+    if game.treasure.Up {
+        game.addReaction(message.ID, TREASURE_REACTION)	
+        return
+    }
+
+    if treasureChance() {
+        game.treasure.Up = true
+        game.addReaction(message.ID, TREASURE_REACTION)		
+    }    
 }
 
-//create a new captain with info from the discord reaction
-func (game *Game) addCaptainFromDiscordReaction(GuildID string, UserID string) (error) {
-    m, err := game.dg.GuildMember(GuildID, UserID)
-    if err != nil {
-        return fmt.Errorf("could not get guild member info %s: %w", UserID, err)
+//check if reaction is already in message
+func (game *Game) isReactionInReactions(reaction string, reactions []*discordgo.MessageReactions) (bool){
+    for _, r := range reactions {
+        if r.Emoji.Name == reaction {
+            return true
+        }
     }
-        
-    name := getName(m.Nick, m.User.Username)
     
-    if m.User.Bot {
-        return fmt.Errorf("%s is a bot", name)
+    return false
+}
+
+//add reaction to message
+func (game *Game) addReaction(messageID string, reaction string) {
+    err := game.dg.MessageReactionAdd(Channel, messageID, url.QueryEscape(reaction))
+    if err != nil {
+        printLog(fmt.Sprintf("could not add %s reaction to new message %s: %s\n", reaction, messageID, err))
+    }	    
+}
+
+//remove reaction to message
+func (game *Game) removeReaction(messageID string, reaction string, userID string) {
+    err := game.dg.MessageReactionRemove(Channel, messageID, url.QueryEscape(reaction), userID)
+    if err != nil {
+        printLog(fmt.Sprintf("could not remove %s reaction from bot message %s: %s\n", reaction, messageID, err))
+        return
+    }	    
+}
+
+//get the appropriate reaction from constants
+func (game *Game) getReaction(name string) (string) {
+    switch name {
+    case PICKPOCKET_NAME:
+        return PICKPOCKET_REACTION
+    default:
+        return DEFAULT_REACTION
     }
-
-    game.createCaptain(UserID, name)	
-
-    return nil
 }

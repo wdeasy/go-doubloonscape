@@ -2,30 +2,33 @@ package game
 
 import (
     "fmt"
-    "sort"
-    "strings"
     "time"
 
     "github.com/bwmarrin/discordgo"
     "github.com/wdeasy/go-doubloonscape/storage"
 )
 
-var (
-    stats Stats
-    treasure bool
-)
-
 type Game struct {
     storage *storage.Storage
     dg *discordgo.Session
 
-    captains map[string]storage.Captain
+    captains map[string]*storage.Captain
     currentCaptainID string
+    currentMessageID string
+    currentBotID string
+
+    destinations map[string]*storage.Destination
+    treasure *storage.Treasure
+    events map[string]*storage.Event
+    logs []*storage.Log
+
+    stats Stats
 }
 
 type Stats struct {
-    Leaderboard string
-    Event string
+    Leaderboard *string
+    Destinations *string
+    Log *string
 }
 
 //start the game
@@ -39,17 +42,12 @@ func InitGame(storage *storage.Storage) (*Game, error) {
 
     game.dg = dg
     game.storage = storage
+    game.currentBotID = game.dg.State.User.ID
 
-    game.captains, err = storage.LoadCaptains()
+    err = game.LoadGame()
     if err != nil {
-        return nil, fmt.Errorf("could not load captains: %w", err)
+        return nil, fmt.Errorf("could not load game: %w", err)
     }
-
-    currentCaptain, err := storage.LoadCurrentCaptain()
-    if err != nil {
-        fmt.Printf("could not load current captain: %s\n", err)
-    }
-    game.currentCaptainID = currentCaptain.ID
 
     // Timer
     game.GameTimer()
@@ -57,39 +55,94 @@ func InitGame(storage *storage.Storage) (*Game, error) {
     return &game, nil	
 }
 
+//load previous game information from storage
+func (game *Game) LoadGame() (error){
+    var err error
+    game.captains, err = game.storage.LoadCaptains()
+    if err != nil {
+        return fmt.Errorf("could not load captains: %w", err)
+    }
+
+    game.destinations, err = game.storage.LoadDestinations()
+    if err != nil {
+        return fmt.Errorf("could not load destinations: %w", err)
+    }
+
+    currentCaptain, err := game.storage.LoadCurrentCaptain()
+    if err != nil {
+        printLog(fmt.Sprintf("could not load current captain: %s\n", err))
+    }
+    game.currentCaptainID = currentCaptain.ID
+
+    game.treasure, err = game.storage.LoadTreasure()
+    if err != nil {
+        return fmt.Errorf("could not load treasure: %w", err)
+    }    
+
+    game.events, err = game.storage.LoadEvents()
+    if err != nil {
+        return fmt.Errorf("could not load events: %w", err)
+    }
+
+    game.logs, err = game.storage.LoadLogs(MAX_LOG_LINES)
+    if err != nil {
+        return fmt.Errorf("could not load logs: %w", err)
+    }
+
+    return nil
+}
+
 //save all info to storage
 func (game *Game) SaveGame() {
     // start := time.Now()
 
     game.storage.SaveCaptains(game.captains)
+    game.storage.SaveDestinations(game.destinations)
+    game.treasure.Save()
+    game.storage.SaveEvents(game.events)
+    game.storage.SaveLogs(game.logs)
 
     // end := time.Now()
     // diff := end.Sub(start)
-    // fmt.Printf("Save Game took %f seconds.\n", diff.Seconds())
+    // printLog(fmt.Sprintf("Save Game took %f seconds.\n", diff.Seconds()))
 }
 
 //main game loop
 func (game *Game) GameTimer() {
+    game.visitDestinations()
     game.setStats()
     last := time.Now()
 
     i := 1
-    ticker := time.NewTicker(60 * time.Second)
+    ticker := time.NewTicker(time.Second)
     quit := make(chan struct{})
     go func() {
         for {
             select {
             case <- ticker.C:
-                game.incrementCaptain()
+                if (i % game.timeModifier() == 0) {
+                    game.visitDestinations()
+                    game.incrementCaptain()
+                    game.checkTreasure()
+                    game.checkEvents()
+                    game.setMessage()	                  
+                    game.SaveGame()                    
+                }
+
+                if (i % LEADERBOARD_RESET == 0) {
+                    game.setLeaderboard()                  
+                }                
                 
-                if (time.Now().Hour() != last.Hour()) {
-                    game.setStats()
+                if (time.Now().Day() != last.Day()) {
+                    game.logTreasure()
                     last = time.Now()
                 }
 
-                game.setMessage()	                  
-                game.SaveGame()
-
+                // if (time.Now().Hour() != last.Hour()) {
+                //     game.setLeaderboard()
+                //     last = time.Now()
+                // }
+                
                 i++
             case <- quit:
                 ticker.Stop()
@@ -99,51 +152,27 @@ func (game *Game) GameTimer() {
     }()
 }
 
-//leaderboard sorting
-type Pair struct {
-    Key string
-    Value int
-  }
+//time modifier
+func (game *Game) timeModifier() (int) {
+    if game.destinations[BERMUDA_NAME].Amount == 0 {
+        return 60
+    }
+        
+    return int(60 * (1 + (0.01 * float64(game.destinations[BERMUDA_NAME].Amount))))
+}
 
-//leaderboard sorting  
-type PairList []Pair
-
-//leaderboard sorting
-func (p PairList) Len() int { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
-
-//format leaderboard to string
-func (game *Game) printLeaderboard(captains map[string]storage.Captain) (string) {
-
-    pl := make(PairList, len(game.captains))
-    i := 0
-    for k, v := range game.captains {
-        pl[i] = Pair{k, v.Gold}
-        i++
+//gold modifier
+func (game *Game) goldModifier() (float64) {
+    if game.destinations[ATLANTIS_NAME].Amount == 0 {
+        return 1
     }
 
-    sort.Sort(sort.Reverse(pl))
-
-    var b strings.Builder
-    for j, k := range pl {
-        fmt.Fprintf(&b, "` %2d ` ` %-27s ` ` %7d `\n", j+1, firstN(captains[k.Key].Name,27), k.Value)
-    }
-    return b.String()
+    return float64(game.destinations[ATLANTIS_NAME].Amount)
 }
 
 //update the stats struct
-func (game *Game) setStats() (){
-    captains := game.captains
-    stats.Leaderboard = game.printLeaderboard(captains)
-
-    stats.Event = ""
-}
-
-//truncate names
-func firstN(s string, n int) string {
-    if len(s) > n {
-         return s[:n]
-    }
-    return s
+func (game *Game) setStats() {
+    game.setLeaderboard()
+    game.setDestinations()    
+    game.setLogs()
 }

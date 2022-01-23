@@ -1,0 +1,3 @@
+ALTER TABLE treasure
+DROP COLUMN prestige,
+ALTER COLUMN amount TYPE INTEGER;

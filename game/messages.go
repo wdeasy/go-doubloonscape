@@ -14,98 +14,66 @@ func (game *Game) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
     }
 
     matched, _ := regexp.MatchString(CAPTAIN_REGEX, m.Content)
-    if matched {
-        if _, ok := game.captains[m.Author.ID]; !ok {
-            game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
-        }
-
-        game.newCaptain(m.GuildID, m.Author.ID)
+    if !matched {
+        return
     }
+
+    if _, ok := game.captains[m.Author.ID]; !ok {
+        game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
+    }
+
+    game.changeCaptainsInGameAndServer(m.GuildID, m.Author.ID)
 }
 
 //update the bot's message
 func (game *Game) setMessage(){ 
-    messages, err := game.dg.ChannelMessages(Channel, 100, "", "", "")
-    if err != nil {
-        fmt.Printf("could not set message. error while getting messages from channel %s: %s\n", Channel, err)
+    messages := game.getMessages()
+    if messages == nil {
         return
     }
     
     embed := game.generateEmbed()
 
-    if (messages[0].Author.ID == game.dg.State.User.ID) {
-        game.editMessage(&embed, messages[0].ID)
+    if (messages[0].Author.ID == game.currentBotID) {
+        game.editMessage(&embed, messages[0])
         return
     } 
+    
+    if game.currentMessageID != "" {
+        game.deleteMessage(game.currentMessageID)
+    }
 
-    game.newMessage(&embed)
+    tempMessageId := game.currentMessageID
+    game.currentMessageID = game.newMessage(&embed)
+
     for _, s := range messages {
-        if (s.Author.ID == game.dg.State.User.ID) {
-            err = game.dg.ChannelMessageDelete(Channel, s.ID)
-            if err != nil {
-                fmt.Printf("error while setting message. could not delete message %s: %s\n", s.ID, err)
-            }			
+        if (s.ID == tempMessageId) {
+            continue
+        }
+
+        if (s.Author.ID == game.currentBotID) {
+            game.deleteMessage(s.ID)		
         }
     }
 }
 
-//generate the embed for the bot's message
-func (game *Game) generateEmbed() (discordgo.MessageEmbed) {
-    embed := discordgo.MessageEmbed{
-        Color: 0xf1c40f,
-        Title: "𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡",
-        Description: stats.Leaderboard,
-        Fields: []*discordgo.MessageEmbedField{
-            {
-                Name:   "ℭ𝔞𝔭𝔱𝔞𝔦𝔫",
-                Value:  "` " + firstN(game.captains[game.currentCaptainID].Name, 31) + " `",
-                Inline: true,
-            },
-            {
-                Name:   "𝔇𝔬𝔲𝔟𝔩𝔬𝔬𝔫𝔰",
-                Value:  "` " + fmt.Sprintf("%-7d",game.captains[game.currentCaptainID].Gold) + " `",
-                Inline: true,
-            },
-            {
-                Name:   "𝔓𝔯𝔢𝔰𝔱𝔦𝔤𝔢",
-                Value:  "` " + fmt.Sprintf("%-4.3f",game.captains[game.currentCaptainID].Prestige) + " `",
-                Inline: true,
-            },
-        },
-        Footer: &discordgo.MessageEmbedFooter{
-            Text:   stats.Event,
-        },		
-    }
-
-    return embed
-}
-
-//edit the existing bot message
-func (game *Game) editMessage(embed *discordgo.MessageEmbed, messageID string) { 
-    _, err := game.dg.ChannelMessageEditEmbed(Channel, messageID, embed)	
+//delete a discord message
+func (game *Game) deleteMessage(messageID string) {
+    err := game.dg.ChannelMessageDelete(Channel, messageID)
     if err != nil {
-        fmt.Printf("could not edit message: %s\n", err)
-    }
+        printLog(fmt.Sprintf("error while setting message. could not delete message %s: %s\n", messageID, err))
+    }	    
 }
 
-//create a new bot message
-func (game *Game) newMessage(embed *discordgo.MessageEmbed) { 
-    treasure = false
-
-    msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
+//get previous discord messages
+func (game *Game) getMessages() ([]*discordgo.Message){
+    messages, err := game.dg.ChannelMessages(Channel, MESSAGE_MAX, "", "", "")
     if err != nil {
-        fmt.Printf("could not create new message: %s\n", err)
-        return
+        printLog(fmt.Sprintf("could not get messages from channel %s: %s\n", Channel, err))
     }
-
-    game.addReactions(msg)
-}
-
-//create a new captain with info from the discord message
-func (game *Game) addCaptainFromDiscordMessage(UserID string, Nick string, UserName string) {
-    name := getName(Nick, UserName)
-    game.createCaptain(UserID, name)	
-}
+    
+    return messages
+} 
 
 //return the correct discord name
 func getName(nick string, user string) (string) {
@@ -114,4 +82,53 @@ func getName(nick string, user string) (string) {
     } 
 
     return user
+}
+
+//create a new bot message
+func (game *Game) newMessage(embed *discordgo.MessageEmbed) (string) { 
+    //msg, err := game.dg.ChannelMessageSendEmbed(Channel, embed)	
+    msg, err := game.dg.ChannelMessageSendComplex(Channel, game.generateMessageSend(embed))
+    
+    
+    if err != nil {
+        printLog(fmt.Sprintf("could not create new message: %s\n", err))
+        return ""
+    }
+
+    game.addReactions(msg)
+
+    return msg.ID
+}
+
+//edit the existing bot message
+func (game *Game) editMessage(embed *discordgo.MessageEmbed, message *discordgo.Message) { 
+    msg, err := game.dg.ChannelMessageEditComplex(game.generateMessageEdit(message.ID, embed))
+    if err != nil {
+        printLog(fmt.Sprintf("could not edit message: %s\n", err))
+        return
+    }
+
+    game.addReactions(msg)
+}
+
+//generate MessageSend object for complex message send
+func (game *Game) generateMessageSend(embed *discordgo.MessageEmbed) (*discordgo.MessageSend) {
+    message := discordgo.MessageSend{
+        Content: *game.stats.Log,
+        Embed: embed,
+    }
+
+    return &message
+}
+
+//generate MessageEdit object for complex message edit
+func (game *Game) generateMessageEdit(messageID string, embed *discordgo.MessageEmbed) (*discordgo.MessageEdit) {
+    message := discordgo.MessageEdit{
+        Content: game.stats.Log,
+        Embed: embed,
+        ID: messageID,
+        Channel: Channel,
+    }
+
+    return &message
 }

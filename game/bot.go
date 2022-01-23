@@ -19,10 +19,6 @@ func (game *Game) InitBot() (*discordgo.Session, error) {
         return nil, fmt.Errorf("BOT_TOKEN environment variable is not set")
     }
 
-    if Role == "" {
-        return nil, fmt.Errorf("ROLE environment variable is not set")
-    }
-
     if Channel == "" {
         return nil, fmt.Errorf("CHANNEL environment variable is not set")
     }   
@@ -49,21 +45,23 @@ func (game *Game) InitBot() (*discordgo.Session, error) {
 func (game *Game) CloseBot() {
     err := game.dg.Close()
     if err != nil {
-        fmt.Printf("error while closing discord bot: %s", err)
+        printLog(fmt.Sprintf("error while closing discord bot: %s\n", err))
     }
 }
 
 //give the captain role to discord user and remove for all others
 func (game *Game) changeRoles(GuildID string, UserID string) (error){
+    if Role == "" {
+        return fmt.Errorf("ROLE environment variable is not set")
+    }
+
     err := game.dg.GuildMemberRoleAdd(GuildID, UserID, Role)
 
     if err != nil {
         return fmt.Errorf("could not add captain role to user %s: %w", UserID, err)
-    }
+    }	
 
-    fmt.Printf("%s is the captain now.\n", game.captains[UserID].Name)		
-
-    members, err := game.dg.GuildMembers(GuildID, "", 1000)
+    members, err := game.dg.GuildMembers(GuildID, "", MAX_GUILD_MEMBERS)
     if err != nil {
         return fmt.Errorf("could not get guild members for %s: %w", GuildID, err)
     }	
@@ -81,9 +79,4 @@ func (game *Game) changeRoles(GuildID string, UserID string) (error){
     }
 
     return nil
-} 
-
-
-
-
-
+}
