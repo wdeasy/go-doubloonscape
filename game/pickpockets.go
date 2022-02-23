@@ -36,6 +36,10 @@ func (game *Game) executePickPocket(pickpocketeer string) {
         return
     }
 
+    if pickpocketeer == game.topCaptainID {
+        return
+    }
+
     if amount > game.captains[game.currentCaptainID].Gold {
         amount = game.captains[game.currentCaptainID].Gold
     }

@@ -14,6 +14,7 @@ type Game struct {
 
     captains map[string]*storage.Captain
     currentCaptainID string
+    topCaptainID string
     currentMessageID string
     currentBotID string
 
