@@ -32,7 +32,7 @@ func (game *Game) executePickPocket(pickpocketeer string) {
     max := math.Floor(game.captains[game.currentCaptainID].Prestige) * 60 //game.goldModifier() * 60
     amount := RandInt64(1, int64(max))
 
-    if amount == 0 {
+    if amount == 0 || pickpocketeer == game.topCaptainID {
         return
     }
 

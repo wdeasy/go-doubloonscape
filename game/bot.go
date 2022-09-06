@@ -3,15 +3,37 @@ package game
 import (
     "fmt"
     "os"
+    "strings"
 
     "github.com/bwmarrin/discordgo"
 )
 
 var (
-    Token string = os.Getenv("BOT_TOKEN")
-    Role string = os.Getenv("ROLE")
-    Channel string = os.Getenv("CHANNEL")
+    Token string = GetVal("BOT_TOKEN")
+    Role string = GetVal("ROLE")
+    Channel string = GetVal("CHANNEL")
 )
+
+func GetVal(key string) (string) {
+    var val string
+
+    fp := os.Getenv(fmt.Sprintf("%s_FILE", key))
+    if len(fp) == 0 {
+        val = os.Getenv(key)
+        return val
+    }   
+
+    if _, err := os.Stat(fp); err == nil {
+        content, err := os.ReadFile(fp)
+        if err != nil {
+            printLog(fmt.Sprintf("error while reading file: %s\n%s", fp, err))
+            return val
+        }
+        val = strings.TrimSpace(string(content))
+    }
+    
+    return val
+}
 
 //initialize the discord bot
 func (game *Game) InitBot() (*discordgo.Session, error) {

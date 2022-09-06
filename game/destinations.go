@@ -43,8 +43,12 @@ func (game *Game) visitDestination(name string, chance int, duration int, lower 
     }	
 
     if rand.Intn(100) <= chance {
-        end := time.Now().Add(time.Minute * time.Duration(duration))
         amount := RandInt(lower, upper)
+        if amount == 0 {
+            return
+        }
+
+        end := time.Now().Add(time.Minute * time.Duration(duration))        
 
         game.updateDestination(name, end, amount)
         game.setDestinations()

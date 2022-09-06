@@ -39,6 +39,7 @@ func (game *Game) printLeaderboard() (*string) {
 
     sort.Sort(sort.Reverse(pl))
 
+    game.topCaptainID = pl[0].Key
     
     fmt.Fprintf(&b, "**𝔏𝔢𝔞𝔡𝔢𝔯𝔅𝔬𝔞𝔯𝔡**\n") 
 
@@ -54,7 +55,7 @@ func (game *Game) printLeaderboard() (*string) {
     if doubloonLength > (34 - placeLength) {
         doubloonLength = (34 - placeLength)
     }
-    
+
     for j, k := range pl {
         fmt.Fprintf(&b, "` %*d ` ` %-*s ` ` %*d `\n", 
                 placeLength, j+1, nameLength, firstN(game.captains[k.Key].Name,nameLength), 
