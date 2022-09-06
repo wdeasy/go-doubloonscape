@@ -17,7 +17,12 @@ var (
 func GetVal(key string) (string) {
     var val string
 
-    fp := fmt.Sprintf("/run/secrets/%s_FILE", key)
+    fp := os.Getenv(fmt.Sprintf("%s_FILE", key))
+    if len(fp) == 0 {
+        val = os.Getenv(key)
+        return val
+    }   
+
     if _, err := os.Stat(fp); err == nil {
         content, err := os.ReadFile(fp)
         if err != nil {
@@ -25,10 +30,6 @@ func GetVal(key string) (string) {
             return val
         }
         val = strings.TrimSpace(string(content))
-    }
-    
-    if len(val) == 0 {
-        val = os.Getenv(key)
     }
     
     return val
