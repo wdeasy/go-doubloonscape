@@ -51,14 +51,14 @@ func (game *Game) incrementCaptain() {
     game.captains[game.currentCaptainID].IncrementDoubloons(game.goldModifier())
 }
 
-//increment captains gold by one
-func (game *Game) incrementCaptainByOne() {
-    if game.currentCaptainID == "" {
-        return
-    }
+// //increment captains gold by one
+// func (game *Game) incrementCaptainByOne() {
+//     if game.currentCaptainID == "" {
+//         return
+//     }
 
-    game.captains[game.currentCaptainID].IncrementDoubloon(game.goldModifier())
-}
+//     game.captains[game.currentCaptainID].IncrementDoubloon(game.goldModifier())
+// }
 
 //create a captain and add it to the map
 func (game *Game) createCaptain(ID string, Name string) {

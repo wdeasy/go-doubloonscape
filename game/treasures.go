@@ -13,6 +13,10 @@ func (game *Game) giveTreasure(UserID string) {
         return 
     }
 
+    if UserID == "" {
+        return
+    }
+
     game.treasure.Up = false    
     captain := game.captains[UserID]
     captain.Gold = captain.Gold + int64(game.treasure.Amount)
