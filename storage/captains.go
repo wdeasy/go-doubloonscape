@@ -112,11 +112,6 @@ func (captain *Captain) IncrementDoubloons(goldModifier float64) {
     captain.Gold += int64(goldModifier * math.Floor(captain.Prestige))
 }
 
-//increment captain doubloons by turn or reaction
-func (captain *Captain) IncrementDoubloon(goldModifier float64) {
-    captain.Gold += int64(goldModifier * 1)
-}
-
 //award x amount of doubloons
 func (captain *Captain) GiveDoubloons(amount int64) {
     captain.Gold += amount

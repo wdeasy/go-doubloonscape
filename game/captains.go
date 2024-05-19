@@ -51,25 +51,16 @@ func (game *Game) incrementCaptain() {
     game.captains[game.currentCaptainID].IncrementDoubloons(game.goldModifier())
 }
 
-//increment captains gold by one
-func (game *Game) incrementCaptainByOne() {
-    if game.currentCaptainID == "" {
-        return
-    }
-
-    game.captains[game.currentCaptainID].IncrementDoubloon(game.goldModifier())
-}
-
 //create a captain and add it to the map
 func (game *Game) createCaptain(ID string, Name string) {
     var captain storage.Captain
 
-    captain.DB = game.storage.DB
-    captain.ID = ID 
-    captain.Name = Name
-    captain.Gold = DEFAULT_GOLD
+    captain.DB       = game.storage.DB
+    captain.ID       = ID 
+    captain.Name     = Name
+    captain.Gold     = DEFAULT_GOLD
     captain.Prestige = DEFAULT_PRESTIGE
-    captain.Captain = false
+    captain.Captain  = false
 
     game.captains[ID] = &captain
 }
@@ -150,8 +141,4 @@ func (game *Game) setPrestige(UserID string) {
 
     game.captains[UserID].AddPrestige(PRESTIGE_CONVERSION)
     game.setMessage()
-    
-    if game.captains[UserID].Prestige > game.treasure.Prestige {
-        game.treasure.SetPrestige(game.captains[UserID].Prestige)
-    }
 }

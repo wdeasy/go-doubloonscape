@@ -1,28 +1,33 @@
 package storage
 
 import (
-    "database/sql"
-    "fmt"
-    "time"
+	"database/sql"
+	"fmt"
+	"time"
 )
 
 type Destination struct {
-    DB    *sql.DB    
-    Name   string
-    End    time.Time
-    Amount int
+    DB      *sql.DB    
+    Name     string
+    End      time.Time
+    Amount   int
+    Chance   int
+    Low      int
+    Max      int
+    ModMax   int
+    Duration int
 }
 
 //update destination or insert if it doesnt exist
 func (destination *Destination) Save() (error){
-    updateStmt := `UPDATE destinations SET end_time = $1, amount = $2 WHERE name = $3`
-    _, err := destination.DB.Exec(updateStmt, destination.End, destination.Amount, destination.Name)
+    updateStmt := `UPDATE destinations SET end_time = $1, amount = $2, chance = $3, low = $4, max =$5, mod_max = $6, duration = $7 WHERE name = $8`
+    _, err := destination.DB.Exec(updateStmt, destination.End, destination.Amount, destination.Chance, destination.Low, destination.Max, destination.ModMax, destination.Duration, destination.Name)
     if err != nil {
         return fmt.Errorf("could not update destination %s: %w", destination.Name, err)
     }
 
-    insertStmt := `INSERT INTO destinations (name, end_time, amount) SELECT CAST($3 AS VARCHAR), $1, $2 WHERE NOT EXISTS (SELECT 1 FROM destinations WHERE name = $3)`
-    _, err = destination.DB.Exec(insertStmt, destination.End, destination.Amount, destination.Name)
+    insertStmt := `INSERT INTO destinations (name, end_time, amount, chance, low, max, mod_max, duration) SELECT CAST($1 AS VARCHAR), $2, $3, $4, $5, $6, $7, $8 WHERE NOT EXISTS (SELECT 1 FROM destinations WHERE name = $1)`
+    _, err = destination.DB.Exec(insertStmt, destination.Name, destination.End, destination.Amount, destination.Chance, destination.Low, destination.Max, destination.ModMax, destination.Duration)
     if err != nil {
         return fmt.Errorf("could not insert destination %s: %w", destination.Name, err)
     }
@@ -42,7 +47,7 @@ func (storage *Storage) LoadDestinations() (map[string]*Destination, error){
     for rows.Next(){
         var destination Destination
         destination.DB = storage.DB        
-        err := rows.Scan(&destination.Name, &destination.End, &destination.Amount)
+        err := rows.Scan(&destination.Name, &destination.End, &destination.Amount, &destination.Chance, &destination.Low, &destination.Max, &destination.ModMax, &destination.Duration)
 
         if err != nil {
             fmt.Printf("could not load destination: %s\n", err)

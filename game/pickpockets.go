@@ -7,32 +7,29 @@ import (
     "strings"
 )
 
-//check if pickpocket is available
-func (game *Game) checkPickPocket() {
-    if !game.checkEvent(PICKPOCKET_NAME, PICKPOCKET_COOLDOWN, PICKPOCKET_CHANCE) {
-        return
-    }
-
-    if len(game.captains) < 2 {
-        return
-    }
-
-    PickPocketeer, err := game.randomCaptainID()
-    if err != nil {
-        printLog(fmt.Sprintf("could not execute pickpocket: %s\n", err))
-        return
-    }
-
-    game.executePickPocket(PickPocketeer)
-    
-}
-
 //execute the pickpocket
 func (game *Game) executePickPocket(pickpocketeer string) {
+    if pickpocketeer == IDLE_EVENT {
+        p, err := game.randomCaptainID()
+        if err != nil {
+            printLog(fmt.Sprintf("could not execute pickpocket: %s\n", err))
+            return
+        }
+        pickpocketeer = p
+    }
+
+    if pickpocketeer == game.currentCaptainID || pickpocketeer == game.topCaptainID {
+        return
+    }
+
+    if game.currentCaptainID == "" {
+        return
+    }
+
     max := math.Floor(game.captains[game.currentCaptainID].Prestige) * 60 //game.goldModifier() * 60
     amount := RandInt64(1, int64(max))
 
-    if amount == 0 || pickpocketeer == game.topCaptainID {
+    if amount == 0 {
         return
     }
 

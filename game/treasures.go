@@ -1,41 +1,26 @@
 package game
 
 import (
-    "fmt"
-    "math/rand"
-    "strconv"
-    "strings"
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
 )
 
 //give a random amount of gold to a captain
 func (game *Game) giveTreasure(UserID string) {
-    if !game.treasure.Up {
-        return 
+    if UserID == IDLE_EVENT {
+        UserID = game.currentCaptainID
     }
 
-    game.treasure.Up = false    
     captain := game.captains[UserID]
-    captain.Gold = captain.Gold + int64(game.treasure.Amount)
+    captain.Gold = captain.Gold + int64(game.events[TREASURE_NAME].Amount)
     game.captains[UserID] = captain
 
-    game.addToLogs(game.treasureString(UserID, game.treasure.Amount))
+    game.addToLogs(game.treasureString(UserID, game.events[TREASURE_NAME].Amount))
     game.setMessage()	
 
-    game.treasure.Reset()
-}
-
-//roll for the treasure
-func treasureChance() (bool) {
-    return rand.Intn(1000) <= TREASURE_CHANCE
-}
-
-//do the treasure turn
-func (game *Game) checkTreasure() {
-    if treasureChance() {
-        game.giveTreasure(game.currentCaptainID)
-    }
-
-    game.treasure.Increment(game.goldModifier())
+    game.events[TREASURE_NAME].Amount = TREASURE_START
 }
 
 //generate a treasure string for the logs
@@ -59,5 +44,23 @@ func (game *Game) treasureString(UserID string, amount int64) (string) {
 
 //add the treasure amount to the logs
 func (game *Game) logTreasure() {
-    game.addToLogs(fmt.Sprintf("The treasure chest has grown to %d", game.treasure.Amount))
+    game.addToLogs(fmt.Sprintf("The treasure chest has grown to %d", game.events[TREASURE_NAME].Amount))
+}
+
+//increment treasure by 1 each minute
+func (game *Game) incrementTreasure() {
+    game.events[TREASURE_NAME].Amount += int64(game.goldModifier() * math.Floor(game.getPrestige()))
+}
+
+//find highest prestige
+func (game *Game) getPrestige() (float64){
+    prestige := 1.0
+
+    for _, c := range game.captains {
+        if c.Prestige > prestige {
+            prestige = c.Prestige
+        }
+    }
+
+    return prestige
 }

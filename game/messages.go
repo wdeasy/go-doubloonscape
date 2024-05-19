@@ -18,11 +18,15 @@ func (game *Game) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
         return
     }
 
+    if !game.events[CAPTAIN_NAME].Up {
+        return
+    }
+
     if _, ok := game.captains[m.Author.ID]; !ok {
         game.addCaptainFromDiscordMessage(m.Author.ID, m.Member.Nick, m.Author.Username)
     }
 
-    game.changeCaptainsInGameAndServer(m.GuildID, m.Author.ID)
+    game.executeEvent(CAPTAIN_NAME, m.Author.ID, m.GuildID)
 }
 
 //update the bot's message

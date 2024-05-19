@@ -1,9 +1,10 @@
 package storage
 
 import (
-    "database/sql"
-    "fmt"
-    "time"
+	"database/sql"
+	"fmt"
+	"math/rand"
+	"time"
 )
 
 type Event struct {
@@ -11,18 +12,22 @@ type Event struct {
     Name     string
     Last     time.Time
     Up       bool
+    Amount   int64
+    Chance   int
+    Max      int
+    Cooldown int
 }
 
 //update event or insert if it doesnt exist
 func (event *Event) Save() (error){
-    updateStmt := `UPDATE events SET last = $1, up = $2 WHERE name = $3`
-    _, err := event.DB.Exec(updateStmt, event.Last, event.Up, event.Name)
+    updateStmt := `UPDATE events SET last = $1, up = $2, amount = $3, chance = $4, max = $5, cooldown = $6 WHERE name = $7`
+    _, err := event.DB.Exec(updateStmt, event.Last, event.Up, event.Amount, event.Chance, event.Max, event.Cooldown, event.Name)
     if err != nil {
         return fmt.Errorf("could not update event %s: %w", event.Name, err)
     }
 
-    insertStmt := `INSERT INTO events (name, last, up) SELECT CAST($1 AS VARCHAR), $2, $3 WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = $1)`
-    _, err = event.DB.Exec(insertStmt, event.Name, event.Last, event.Up)
+    insertStmt := `INSERT INTO events (name, last, up, amount, chance, max, cooldown) SELECT CAST($1 AS VARCHAR), $2, $3, $4, $5, $6, $7 WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = $1)`
+    _, err = event.DB.Exec(insertStmt, event.Name, event.Last, event.Up, event.Amount, event.Chance, event.Max, event.Cooldown)
     if err != nil {
         return fmt.Errorf("could not insert event %s: %w", event.Name, err)
     }
@@ -43,7 +48,7 @@ func (storage *Storage) LoadEvents() (map[string]*Event, error){
         var event Event
         event.DB = storage.DB      
           
-        err := rows.Scan(&event.Name, &event.Last, &event.Up)
+        err := rows.Scan(&event.Name, &event.Last, &event.Up, &event.Amount, &event.Chance, &event.Max, &event.Cooldown)
         if err != nil {
             fmt.Printf("could not load event: %s\n", err)
         }
@@ -65,7 +70,33 @@ func (storage *Storage) SaveEvents(events map[string]*Event) {
     }	
 }
 
-//see if the event is off cooldown
-func (event *Event) Ready(cooldown int) (bool){
-    return time.Now().After(event.Last.Add(time.Minute * time.Duration(cooldown)))
+func (event *Event) Ready() (bool) {
+    //if event already up
+    if event.Up {
+        return true
+    }
+
+    // if cooldown not up
+    if !time.Now().After(event.Last.Add(time.Minute * time.Duration(event.Cooldown))) {
+        return false
+    } 
+
+    // if roll fails
+    if !event.Roll() {
+        return false
+    }
+
+    event.Up = true  
+
+    return true
+}
+
+func (event *Event) Roll() (bool) {
+    return rand.Intn(event.Max) <= event.Chance
+}
+
+//reset the event
+func (event *Event) Reset() {
+    event.Last = time.Now()
+    event.Up = false
 }

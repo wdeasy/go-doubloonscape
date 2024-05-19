@@ -19,9 +19,10 @@ type Game struct {
     currentBotID string
 
     destinations map[string]*storage.Destination
-    treasure *storage.Treasure
     events map[string]*storage.Event
     logs []*storage.Log
+
+    reactions map[string]*Reaction
 
     stats Stats
 }
@@ -68,6 +69,7 @@ func (game *Game) LoadGame() (error){
     if err != nil {
         return fmt.Errorf("could not load destinations: %w", err)
     }
+    game.updateDestinations()
 
     currentCaptain, err := game.storage.LoadCurrentCaptain()
     if err != nil {
@@ -75,20 +77,18 @@ func (game *Game) LoadGame() (error){
     }
     game.currentCaptainID = currentCaptain.ID
 
-    game.treasure, err = game.storage.LoadTreasure()
-    if err != nil {
-        return fmt.Errorf("could not load treasure: %w", err)
-    }    
-
     game.events, err = game.storage.LoadEvents()
     if err != nil {
         return fmt.Errorf("could not load events: %w", err)
     }
+    game.updateEvents()
 
     game.logs, err = game.storage.LoadLogs(MAX_LOG_LINES)
     if err != nil {
         return fmt.Errorf("could not load logs: %w", err)
     }
+
+    game.reactions = game.loadReactions()
 
     return nil
 }
@@ -99,7 +99,6 @@ func (game *Game) SaveGame() {
 
     game.storage.SaveCaptains(game.captains)
     game.storage.SaveDestinations(game.destinations)
-    game.treasure.Save()
     game.storage.SaveEvents(game.events)
     game.storage.SaveLogs(game.logs)
 
@@ -124,7 +123,6 @@ func (game *Game) GameTimer() {
                 if (i % game.timeModifier() == 0) {
                     game.visitDestinations()
                     game.incrementCaptain()
-                    game.checkTreasure()
                     game.checkEvents()
                     game.setMessage()	                  
                     game.SaveGame()                    
