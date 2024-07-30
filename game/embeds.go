@@ -26,7 +26,7 @@ func (game *Game) generateEmbed() (discordgo.MessageEmbed) {
         Fields: []*discordgo.MessageEmbedField{
             {
                 Name:   "ℭ𝔞𝔭𝔱𝔞𝔦𝔫",
-                Value:  "` " + firstN(Name, 31) + " `",
+                Value:  "` " + firstN(Name, 21) + " `",
                 Inline: true,
             },
             {
