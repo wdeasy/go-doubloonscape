@@ -31,9 +31,9 @@ func treasureChance() (bool) {
 
 //do the treasure turn
 func (game *Game) checkTreasure() {
-    if treasureChance() {
-        game.giveTreasure(game.currentCaptainID)
-    }
+    // if treasureChance() {
+    //     game.giveTreasure(game.currentCaptainID)
+    // }
 
     game.treasure.Increment(game.goldModifier())
 }

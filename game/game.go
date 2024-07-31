@@ -124,7 +124,7 @@ func (game *Game) GameTimer() {
                 if (i % game.timeModifier() == 0) {
                     game.visitDestinations()
                     game.incrementCaptain()
-                    // game.checkTreasure()
+                    game.checkTreasure()
                     // game.checkEvents()
                     game.setMessage()	                  
                     game.SaveGame()                    
