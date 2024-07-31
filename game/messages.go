@@ -77,11 +77,13 @@ func (game *Game) getMessages() ([]*discordgo.Message){
 
 //return the correct discord name
 func getName(nick string, user string) (string) {
+    var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
+
     if (nick != "") {
-        return nick
+        return nonAlphanumericRegex.ReplaceAllString(nick, "")
     } 
 
-    return user
+    return nonAlphanumericRegex.ReplaceAllString(user, "")
 }
 
 //create a new bot message

@@ -50,7 +50,7 @@ func (game *Game) printLeaderboard() (*string) {
         doubloonLength = len(strconv.FormatInt(pl[len(pl)-1].Value,10))
     }
 
-    nameLength := 36 - doubloonLength - placeLength
+    nameLength := EMBED_WIDTH - doubloonLength - placeLength
     
     if doubloonLength > (34 - placeLength) {
         doubloonLength = (34 - placeLength)

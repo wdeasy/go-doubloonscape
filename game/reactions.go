@@ -21,7 +21,8 @@ func (game *Game) messageReactionAdd(s *discordgo.Session, m *discordgo.MessageR
     
     switch m.Emoji.Name {
         case INCREMENT_REACTION:
-            game.incrementCaptainByOne()
+            // game.incrementCaptainByOne()
+            game.incrementCaptain()
         case CAPTAIN_REACTION:
             game.changeCaptainsInGameAndServer(m.GuildID, m.UserID)
         case PRESTIGE_REACTION:
